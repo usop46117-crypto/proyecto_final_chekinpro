@@ -1,0 +1,812 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="page-bg">
+    <div class="page-container">
+        <!-- Header con título y botones -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h2 class="page-title">
+                <i class="bi bi-door-open"></i> 
+                Habitaciones - {{ hotel.nombre }}
+            </h2>
+            <div class="d-flex gap-2">
+                <!-- Solo el recepcionista ve el botón de nueva habitación -->
+                {% if user.rol == 'recep' %}
+                <a href="{% url 'habitaciones:crear_habitacion' %}?hotel={{ hotel.id }}" class="btn-crear">
+                    <i class="bi bi-plus-circle"></i> Nueva Habitación
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- CONTENEDOR DE MENSAJES FLOTANTES (se mantiene pero SweetAlert lo reemplazará) -->
+        {% if messages %}
+        <div class="messages-container" style="display: none;">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert" data-auto-dismiss="5000">
+                <div class="alert-content">
+                    <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' %}exclamation-triangle-fill{% elif message.tags == 'warning' %}exclamation-circle-fill{% else %}info-circle-fill{% endif %}"></i>
+                    <span>{{ message }}</span>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Filtros de búsqueda -->
+        <div class="filtros-card mb-4">
+            <div class="filtros-header">
+                <i class="bi bi-search"></i> Buscar Habitaciones
+            </div>
+            <div class="filtros-body">
+                <form method="get" class="row g-3">
+                    <input type="hidden" name="hotel" value="{{ hotel.id }}">
+                    
+                    <div class="col-md-6">
+                        <label for="numero" class="form-label">Número de habitación</label>
+                        <input type="text" class="form-control" id="numero" name="numero" 
+                               value="{{ request.GET.numero }}" placeholder="Ej: A001, 101, etc.">
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="estado" class="form-label">Estado</label>
+                        <select class="form-select" id="estado" name="estado">
+                            <option value="">Todos los estados</option>
+                            <option value="libre" {% if request.GET.estado == 'libre' %}selected{% endif %}>Libre</option>
+                            <option value="ocupada" {% if request.GET.estado == 'ocupada' %}selected{% endif %}>Ocupada</option>
+                            <option value="mantenimiento" {% if request.GET.estado == 'mantenimiento' %}selected{% endif %}>Mantenimiento</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn-buscar w-100">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                    
+                    {% if request.GET.numero or request.GET.estado %}
+                    <div class="col-12 text-end">
+                        <a href="?hotel={{ hotel.id }}" class="btn-limpiar">
+                            <i class="bi bi-x-circle"></i> Limpiar filtros
+                        </a>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabla de habitaciones -->
+        <div class="info-card">
+            <div class="card-header">
+                <i class="bi bi-list-ul"></i> Lista de Habitaciones
+                <span class="total-badge">Total: {{ total_habitaciones }}</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Número</th>
+                                <th>Tipo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for habitacion in habitaciones %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><strong>#{{ habitacion.numero }}</strong></td>
+                                <td>{{ habitacion.tipo }}</td>
+                                <td>
+                                    {% if habitacion.estado == 'libre' %}
+                                    <span class="badge estado-libre">Libre</span>
+                                    {% elif habitacion.estado == 'ocupada' %}
+                                    <span class="badge estado-ocupada">Ocupada</span>
+                                    {% else %}
+                                    <span class="badge estado-mantenimiento">Mantenimiento</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.rol == 'recep' %}
+                                    <!-- Recepcionista: ve todos los botones de acción -->
+                                    <div class="acciones-container">
+                                        {% if habitacion.estado == 'mantenimiento' %}
+                                        <a href="#" onclick="return confirmarQuitarMantenimiento('{% url 'habitaciones:quitar_mantenimiento' habitacion.id %}?hotel={{ hotel.id }}', '{{ habitacion.numero }}')" class="btn-action btn-success" title="Quitar mantenimiento">
+                                            <i class="bi bi-check-circle"></i>
+                                        </a>
+                                        {% else %}
+                                        <a href="#" onclick="return confirmarPonerMantenimiento('{% url 'habitaciones:poner_mantenimiento' habitacion.id %}?hotel={{ hotel.id }}', '{{ habitacion.numero }}')" class="btn-action btn-warning" title="Poner en mantenimiento">
+                                            <i class="bi bi-tools"></i>
+                                        </a>
+                                        {% endif %}
+                                        
+                                        <a href="{% url 'habitaciones:editar_habitacion' habitacion.id %}?hotel={{ hotel.id }}" class="btn-action btn-info" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        
+                                        {% if habitacion.estado != 'ocupada' %}
+                                        <a href="#" onclick="return confirmarEliminacion('{% url 'habitaciones:eliminar_habitacion' habitacion.id %}?hotel={{ hotel.id }}', '{{ habitacion.numero }}')" class="btn-action btn-danger" title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                    {% else %}
+                                    <!-- Administrador: solo ve íconos decorativos (sin acciones) -->
+                                    <div class="acciones-container" style="opacity: 0.6;">
+                                        <span class="btn-action btn-disabled" title="Solo visualización">
+                                            <i class="bi bi-tools"></i>
+                                        </span>
+                                        <span class="btn-action btn-disabled" title="Solo visualización">
+                                            <i class="bi bi-pencil"></i>
+                                        </span>
+                                        <span class="btn-action btn-disabled" title="Solo visualización">
+                                            <i class="bi bi-trash"></i>
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <i class="bi bi-door-open fs-1" style="color: rgba(196, 155, 63, 0.5);"></i>
+                                    <p class="mt-3" style="color: #6b7280;">No hay habitaciones que coincidan con los filtros</p>
+                                    {% if user.rol == 'recep' %}
+                                    <a href="{% url 'habitaciones:crear_habitacion' %}?hotel={{ hotel.id }}" class="btn-crear">
+                                        <i class="bi bi-plus-circle"></i> Crear nueva habitación
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ============================================ -->
+                <!-- PAGINACIÓN AGREGADA AQUÍ - SIN MODIFICAR NADA MÁS -->
+                <!-- ============================================ -->
+                {% if habitaciones.paginator.num_pages > 1 %}
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Mostrando {{ habitaciones.start_index }} - {{ habitaciones.end_index }} de {{ habitaciones.paginator.count }} habitaciones
+                    </div>
+                    <div class="pagination">
+                        {% if habitaciones.has_previous %}
+                        <a href="?hotel={{ hotel.id }}&page=1{% if request.GET.numero %}&numero={{ request.GET.numero }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" class="page-link" title="Primera">
+                            <i class="bi bi-chevron-double-left"></i>
+                        </a>
+                        <a href="?hotel={{ hotel.id }}&page={{ habitaciones.previous_page_number }}{% if request.GET.numero %}&numero={{ request.GET.numero }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" class="page-link" title="Anterior">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                        {% endif %}
+
+                        {% for num in habitaciones.paginator.page_range %}
+                            {% if num >= habitaciones.number|add:'-2' and num <= habitaciones.number|add:'2' %}
+                                {% if num == habitaciones.number %}
+                                <span class="page-link active">{{ num }}</span>
+                                {% else %}
+                                <a href="?hotel={{ hotel.id }}&page={{ num }}{% if request.GET.numero %}&numero={{ request.GET.numero }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" class="page-link">{{ num }}</a>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if habitaciones.has_next %}
+                        <a href="?hotel={{ hotel.id }}&page={{ habitaciones.next_page_number }}{% if request.GET.numero %}&numero={{ request.GET.numero }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" class="page-link" title="Siguiente">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                        <a href="?hotel={{ hotel.id }}&page={{ habitaciones.paginator.num_pages }}{% if request.GET.numero %}&numero={{ request.GET.numero }}{% endif %}{% if request.GET.estado %}&estado={{ request.GET.estado }}{% endif %}" class="page-link" title="Última">
+                            <i class="bi bi-chevron-double-right"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                <!-- ============================================ -->
+                <!-- FIN PAGINACIÓN -->
+                <!-- ============================================ -->
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* TODO TU CSS EXISTENTE - SIN NINGÚN CAMBIO */
+    .page-bg {
+        min-height: calc(100vh - 160px);
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                    url('{% static "img/hotell12.jpg" %}') center/cover fixed;
+        padding: 40px 20px;
+    }
+
+    .page-bg::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.2);
+        z-index: 0;
+    }
+
+    .page-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    .page-title {
+        color: white;
+        font-size: 32px;
+        font-weight: 700;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        margin: 0;
+    }
+
+    .page-title i {
+        color: #c49b3f;
+        margin-right: 10px;
+    }
+
+    .btn-volver {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 10px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        color: #1f2937;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-volver:hover {
+        transform: translateX(-5px);
+        background: white;
+    }
+
+    .btn-crear {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-crear:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.5);
+    }
+
+    .filtros-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-bottom: 25px;
+    }
+
+    .filtros-header {
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        padding: 15px 20px;
+        font-weight: 700;
+        font-size: 16px;
+        color: #0a141e;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .filtros-header i {
+        margin-right: 10px;
+    }
+
+    .filtros-body {
+        padding: 20px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 5px;
+        font-size: 14px;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 10px 15px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #c49b3f;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(196, 155, 63, 0.2);
+    }
+
+    .btn-buscar {
+        background: #c49b3f;
+        color: #0a141e;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        transition: all 0.3s;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 46px;
+    }
+
+    .btn-buscar:hover {
+        background: #e4b95b;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(196, 155, 63, 0.4);
+    }
+
+    .btn-limpiar {
+        color: #6b7280;
+        text-decoration: none;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: 0.3s;
+    }
+
+    .btn-limpiar:hover {
+        color: #ef4444;
+    }
+
+    .info-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #1f2937, #111827);
+        padding: 18px 25px;
+        font-weight: 700;
+        font-size: 18px;
+        color: white;
+        border-bottom: 2px solid #c49b3f;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .card-header i {
+        margin-right: 10px;
+        color: #c49b3f;
+    }
+
+    .total-badge {
+        background: #c49b3f;
+        color: #1f2937;
+        padding: 5px 15px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .card-body {
+        padding: 25px;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table thead th {
+        background: #f3f4f6;
+        color: #4b5563;
+        font-weight: 600;
+        padding: 15px;
+        text-align: left;
+        border-bottom: 2px solid #c49b3f;
+    }
+
+    .table tbody td {
+        padding: 15px;
+        border-bottom: 1px solid #e5e7eb;
+        color: #1f2937;
+    }
+
+    .table tbody tr:hover {
+        background: rgba(196, 155, 63, 0.05);
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .estado-libre {
+        background: #10b981;
+        color: white;
+    }
+
+    .estado-ocupada {
+        background: #ef4444;
+        color: white;
+    }
+
+    .estado-mantenimiento {
+        background: #f59e0b;
+        color: white;
+    }
+
+    .acciones-container {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        color: white;
+        text-decoration: none;
+        transition: 0.3s;
+        border: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-action:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn-disabled {
+        background: #9ca3af;
+        cursor: default;
+        opacity: 0.5;
+    }
+
+    .btn-disabled:hover {
+        transform: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-success { background: #10b981; }
+    .btn-success:hover { background: #059669; }
+    .btn-warning { background: #f59e0b; }
+    .btn-warning:hover { background: #d97706; }
+    .btn-info { background: #3b82f6; }
+    .btn-info:hover { background: #2563eb; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+
+    .messages-container {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        z-index: 9999;
+        max-width: 400px;
+        width: 100%;
+        pointer-events: none;
+    }
+
+    .alert {
+        pointer-events: auto;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(10px);
+        border: none;
+        border-left: 4px solid;
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        animation: slideInRight 0.3s ease forwards;
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .alert-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .alert-content i {
+        font-size: 22px;
+    }
+
+    .alert-success {
+        border-left-color: #10b981;
+    }
+    .alert-success i { color: #10b981; }
+
+    .alert-error {
+        border-left-color: #ef4444;
+    }
+    .alert-error i { color: #ef4444; }
+
+    .alert-warning {
+        border-left-color: #f59e0b;
+    }
+    .alert-warning i { color: #f59e0b; }
+
+    .alert-info {
+        border-left-color: #3b82f6;
+    }
+    .alert-info i { color: #3b82f6; }
+
+    .btn-close {
+        background: transparent;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        opacity: 0.5;
+        transition: opacity 0.3s;
+        padding: 0 5px;
+    }
+
+    .btn-close:hover {
+        opacity: 1;
+    }
+
+    /* ============================================ */
+    /* ESTILOS PARA PAGINACIÓN - AGREGADOS */
+    /* ============================================ */
+    .pagination-container {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .pagination-info {
+        color: #4b5563;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+
+    .page-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 40px;
+        height: 40px;
+        padding: 0 10px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        color: #4b5563;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .page-link:hover {
+        background: #c49b3f;
+        border-color: #c49b3f;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .page-link.active {
+        background: #c49b3f;
+        border-color: #c49b3f;
+        color: white;
+        cursor: default;
+    }
+
+    .page-link.active:hover {
+        transform: none;
+    }
+
+    @media (max-width: 768px) {
+        .pagination-container {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .pagination-info {
+            text-align: center;
+        }
+    }
+    /* ============================================ */
+    /* FIN ESTILOS PAGINACIÓN */
+    /* ============================================ */
+
+    @media (max-width: 768px) {
+        .btn-crear, .btn-volver {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        
+        .card-header {
+            flex-direction: column;
+            gap: 10px;
+            text-align: center;
+        }
+        
+        .messages-container {
+            top: 80px;
+            right: 10px;
+            left: 10px;
+            max-width: none;
+        }
+        
+        .alert {
+            padding: 14px 16px;
+        }
+        
+        .alert-content {
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .page-title {
+            font-size: 24px;
+        }
+    }
+</style>
+
+<!-- SweetAlert2 Script - AGREGADO SIN MODIFICAR NADA MÁS -->
+<script>
+    // Función para confirmar eliminación
+    function confirmarEliminacion(url, numero) {
+        Swal.fire({
+            title: '¿Eliminar habitación?',
+            html: `¿Estás seguro de eliminar la habitación <strong>#${numero}</strong>?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            background: '#1e293b',
+            color: '#fff',
+            iconColor: '#c49b3f',
+            backdrop: 'rgba(0,0,0,0.7)'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+        return false;
+    }
+
+    // Función para confirmar poner en mantenimiento
+    function confirmarPonerMantenimiento(url, numero) {
+        Swal.fire({
+            title: '¿Poner en mantenimiento?',
+            html: `¿Poner la habitación <strong>#${numero}</strong> en mantenimiento?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#f59e0b',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, poner',
+            cancelButtonText: 'Cancelar',
+            background: '#1e293b',
+            color: '#fff',
+            iconColor: '#c49b3f',
+            backdrop: 'rgba(0,0,0,0.7)'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+        return false;
+    }
+
+    // Función para confirmar quitar mantenimiento
+    function confirmarQuitarMantenimiento(url, numero) {
+        Swal.fire({
+            title: '¿Quitar mantenimiento?',
+            html: `¿Quitar el mantenimiento de la habitación <strong>#${numero}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, quitar',
+            cancelButtonText: 'Cancelar',
+            background: '#1e293b',
+            color: '#fff',
+            iconColor: '#c49b3f',
+            backdrop: 'rgba(0,0,0,0.7)'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+        return false;
+    }
+
+    // Auto-dismiss messages (se mantiene igual)
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mostrar mensajes con SweetAlert en lugar de los alertas flotantes
+        {% if messages %}
+            {% for message in messages %}
+                Swal.fire({
+                    icon: '{{ message.tags }}' === 'error' ? 'error' : 
+                          '{{ message.tags }}' === 'warning' ? 'warning' : 'success',
+                    title: '{{ message.tags|capfirst }}',
+                    text: '{{ message|escapejs }}',
+                    timer: 4000,
+                    timerProgressBar: true,
+                    showConfirmButton: true,
+                    confirmButtonColor: '#c49b3f',
+                    background: '#1e293b',
+                    color: '#fff',
+                    iconColor: '{{ message.tags }}' === 'error' ? '#ef4444' : 
+                               '{{ message.tags }}' === 'warning' ? '#f59e0b' : '#10b981',
+                    backdrop: 'rgba(0,0,0,0.7)'
+                });
+            {% endfor %}
+        {% endif %}
+
+        // Opcional: Ocultar los mensajes flotantes antiguos
+        const alerts = document.querySelectorAll('.alert[data-auto-dismiss]');
+        alerts.forEach(function(alert) {
+            alert.style.display = 'none';
+        });
+    });
+</script>
+{% endblock %}

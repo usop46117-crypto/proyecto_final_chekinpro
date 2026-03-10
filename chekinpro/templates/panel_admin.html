@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-bg">
+    <!-- Capa semitransparente -->
+    <div class="bg-overlay"></div>
+    
+    <div class="dashboard-container">
+        
+        <!-- Header del Admin -->
+        <div class="admin-header">
+            <div class="admin-info">
+                <i class="bi bi-shield-lock"></i>
+                <div>
+                    <h2>Panel de Administrador</h2>
+                    <p>{{ user.username }} - {{ user.email }}</p>
+                </div>
+            </div>
+            <div class="date-info">
+                <i class="bi bi-calendar3"></i> {% now "d M, Y" %}
+                <i class="bi bi-clock ms-3"></i> {% now "H:i" %} hrs
+                <span class="admin-badge">Administrador</span>
+            </div>
+        </div>
+
+        <!-- Título -->
+        <h1 class="page-title">Mis Hoteles</h1>
+
+        <!-- Grid de Hoteles -->
+        <div class="hoteles-grid">
+            {% for hotel in hoteles %}
+            <div class="hotel-card">
+                <div class="hotel-header">
+                    {% if hotel.logo %}
+                    <img src="{{ hotel.logo.url }}" alt="{{ hotel.nombre }}" class="hotel-logo">
+                    {% else %}
+                    <div class="hotel-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    {% endif %}
+                    <h2>{{ hotel.nombre }}</h2>
+                </div>
+                
+                <div class="hotel-details">
+                    <p><i class="bi bi-geo-alt"></i> {{ hotel.direccion }}</p>
+                    <p><i class="bi bi-telephone"></i> {{ hotel.telefono }}</p>
+                    <p><i class="bi bi-envelope"></i> {{ hotel.email }}</p>
+                </div>
+
+                <div class="hotel-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Total</span>
+                        <span class="stat-value">{{ hotel.total_habitaciones|default:"0" }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Ocupadas</span>
+                        <span class="stat-value">{{ hotel.ocupadas|default:"0" }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Libres</span>
+                        <span class="stat-value">{{ hotel.libres|default:"0" }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Mantenimiento</span>
+                        <span class="stat-value">{{ hotel.mantenimiento|default:"0" }}</span>
+                    </div>
+                </div>
+
+                <div class="hotel-actions">
+                    <a href="{% url 'panel_hotel' hotel.id %}" class="btn-ver">
+                        <i class="bi bi-eye"></i> Ver Panel
+                    </a>
+                    <a href="{% url 'gestionar_recepcionista' hotel.id %}" class="btn-gestionar">
+                        <i class="bi bi-person-gear"></i> Recepcionista
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="bi bi-building"></i>
+                <h3>No tienes hoteles registrados</h3>
+                <p>Crea tu primer hotel para comenzar a gestionar</p>
+                <a href="{% url 'crear_hotel' %}" class="btn-crear">
+                    <i class="bi bi-plus-circle"></i> Crear Hotel
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if hoteles %}
+        <div class="fab-crear">
+            <a href="{% url 'crear_hotel' %}" class="btn-flotante" title="Crear nuevo hotel">
+                <i class="bi bi-plus-lg"></i>
+            </a>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<style>
+    /* Fondo hotell12 */
+    .dashboard-bg {
+        min-height: calc(100vh - 80px);
+        background: url('{% static "img/hotell12.jpg" %}') no-repeat center center fixed;
+        background-size: cover;
+        padding: 30px 20px;
+        position: relative;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    /* Capa semitransparente */
+    .bg-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.2);
+        z-index: 0;
+    }
+    
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Header del Admin */
+    .admin-header {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 20px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .admin-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .admin-info i {
+        font-size: 40px;
+        color: #c49b3f;
+        background: rgba(196, 155, 63, 0.15);
+        padding: 10px;
+        border-radius: 12px;
+    }
+    
+    .admin-info h2 {
+        margin: 0;
+        font-size: 24px;
+        color: #1f2937;
+    }
+    
+    .admin-info p {
+        margin: 5px 0 0;
+        color: #64748b;
+    }
+    
+    .date-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: #4b5563;
+    }
+    
+    .date-info i {
+        color: #c49b3f;
+    }
+    
+    .admin-badge {
+        background: #c49b3f;
+        color: #0a141e;
+        padding: 5px 15px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    /* Título */
+    .page-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 30px;
+        padding-left: 10px;
+        border-left: 5px solid #c49b3f;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    /* Grid de Hoteles */
+    .hoteles-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 25px;
+    }
+    
+    .hotel-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .hotel-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+    }
+    
+    .hotel-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(196, 155, 63, 0.3);
+    }
+    
+    .hotel-logo {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 2px solid #c49b3f;
+    }
+    
+    .hotel-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        color: white;
+    }
+    
+    .hotel-header h2 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+    
+    .hotel-details p {
+        margin: 10px 0;
+        color: #4b5563;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .hotel-details i {
+        color: #c49b3f;
+        width: 20px;
+    }
+    
+    .hotel-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        background: rgba(249, 250, 251, 0.8);
+        border-radius: 16px;
+        padding: 15px;
+        margin: 20px 0;
+        border: 1px solid rgba(196, 155, 63, 0.2);
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-label {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        margin-bottom: 5px;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+    
+    .hotel-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-ver, .btn-gestionar {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        text-decoration: none;
+        text-align: center;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        border: none;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-ver {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+    
+    .btn-ver:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-gestionar {
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        color: #0a141e;
+    }
+    
+    .btn-gestionar:hover {
+        background: linear-gradient(135deg, #e4b95b, #c49b3f);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(196, 155, 63, 0.4);
+    }
+    
+    /* Estado vacío */
+    .empty-state {
+        grid-column: 1/-1;
+        text-align: center;
+        padding: 60px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .empty-state i {
+        font-size: 60px;
+        color: #c49b3f;
+        margin-bottom: 20px;
+    }
+    
+    .empty-state h3 {
+        font-size: 24px;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+    
+    .empty-state p {
+        color: #64748b;
+        margin-bottom: 20px;
+    }
+    
+    .btn-crear {
+        display: inline-block;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-crear:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(16, 185, 129, 0.4);
+    }
+    
+    /* Botón flotante */
+    .fab-crear {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 100;
+    }
+    
+    .btn-flotante {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        text-decoration: none;
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        transition: all 0.3s;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .btn-flotante:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
+    }
+    
+    /* Responsive */
+    @media (max-width: 900px) {
+        .hotel-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .admin-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+        }
+        
+        .date-info {
+            flex-direction: column;
+        }
+        
+        .hotel-actions {
+            flex-direction: column;
+        }
+        
+        .admin-info {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}

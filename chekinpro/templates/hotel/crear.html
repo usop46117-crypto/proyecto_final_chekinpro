@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2><i class="bi bi-building"></i> Registrar Hotel</h2>
+        <p class="subtitle">Completa los datos de tu hotel</p>
+
+        <div class="info-box">
+            <i class="bi bi-info-circle-fill"></i>
+            <div>
+                <strong>📧 Importante:</strong>
+                <ul class="mb-0 mt-2">
+                    <li>El <strong>correo</strong> será para contacto y enviar credenciales</li>
+                    <li>El <strong>teléfono</strong> y <strong>dirección</strong> son datos públicos del hotel</li>
+                    <li>Después de registrar, podrás agregar recepcionistas</li>
+                </ul>
+            </div>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label><i class="bi bi-building"></i> Nombre del hotel *</label>
+                <input type="text" name="nombre" class="form-control" placeholder="Ej: Hotel Makarena" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group half">
+                    <label><i class="bi bi-telephone"></i> Teléfono *</label>
+                    <input type="tel" name="telefono" class="form-control" placeholder="3001234567" required>
+                </div>
+                <div class="form-group half">
+                    <label><i class="bi bi-envelope"></i> Email *</label>
+                    <input type="email" name="email" class="form-control" placeholder="hotel@ejemplo.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label><i class="bi bi-geo-alt"></i> Dirección *</label>
+                <input type="text" name="direccion" class="form-control" placeholder="Ej: Calle 123 #45-67" required>
+            </div>
+
+            <div class="form-group">
+                <label><i class="bi bi-image"></i> Logo del hotel</label>
+                <input type="file" name="logo" class="form-control" accept="image/*">
+                <small class="text-muted">Formatos: JPG, PNG (Máx 2MB)</small>
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" name="tiene_parqueadero" id="parqueadero">
+                <label for="parqueadero">🅿️ ¿El hotel tiene parqueadero?</label>
+            </div>
+
+            <button type="submit" class="btn-primary">
+                <i class="bi bi-check-circle"></i> Registrar Hotel
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>¿Ya tienes hoteles? <a href="{% url 'mis_hoteles' %}">Ver mis hoteles</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-wrapper {
+        min-height: calc(100vh - 160px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('{% static "img/hotel-bg.jpg" %}') center/cover fixed;
+    }
+    .auth-card {
+        max-width: 600px;
+        width: 100%;
+        background: white;
+        border-radius: 30px;
+        padding: 40px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    }
+    h2 {
+        text-align: center;
+        color: #1f2937;
+        margin-bottom: 10px;
+    }
+    h2 i {
+        color: #c49b3f;
+    }
+    .subtitle {
+        text-align: center;
+        color: #6b7280;
+        margin-bottom: 30px;
+    }
+    .info-box {
+        background: #2563eb10;
+        border-left: 4px solid #2563eb;
+        border-radius: 12px;
+        padding: 15px;
+        margin: 20px 0;
+        display: flex;
+        gap: 15px;
+        font-size: 14px;
+    }
+    .info-box i {
+        font-size: 24px;
+        color: #2563eb;
+        flex-shrink: 0;
+    }
+    .form-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+        width: 100%;
+    }
+    .form-group.half {
+        width: 50%;
+    }
+    label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 8px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 15px;
+        box-sizing: border-box;
+    }
+    .form-control:focus {
+        border-color: #2563eb;
+        outline: none;
+    }
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 20px 0;
+        padding: 15px;
+        background: #f9fafb;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+    }
+    .checkbox-group input {
+        width: 18px;
+        height: 18px;
+    }
+    .btn-primary {
+        width: 100%;
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-top: 20px;
+    }
+    .btn-primary:hover {
+        background: #1d4ed8;
+        transform: translateY(-2px);
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+    .auth-footer a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+    .alert {
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        color: white;
+    }
+    .alert-success { background: #10b981; }
+    .alert-error { background: #ef4444; }
+    .alert-warning { background: #f59e0b; }
+    small.text-muted {
+        display: block;
+        color: #6b7280;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+    @media (max-width: 600px) {
+        .auth-card { padding: 25px; }
+        .form-row { flex-direction: column; }
+        .form-group.half { width: 100%; }
+    }
+</style>
+{% endblock %}

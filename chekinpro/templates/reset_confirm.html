@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2><i class="bi bi-key"></i> Nueva Contraseña</h2>
+        
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if valid %}
+        <p class="text-muted mb-4">Hola <strong>{{ user.username }}</strong>, crea una nueva contraseña.</p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Nueva Contraseña</label>
+                <input type="password" name="password" class="form-control" placeholder="Mínimo 8 caracteres" required>
+            </div>
+
+            <div class="form-group">
+                <label>Confirmar Contraseña</label>
+                <input type="password" name="confirm_password" class="form-control" placeholder="Repite la contraseña" required>
+            </div>
+
+            <button type="submit" class="btn-primary">Cambiar Contraseña</button>
+        </form>
+        {% else %}
+        <div class="alert alert-error text-center">
+            <i class="bi bi-exclamation-triangle fs-1"></i>
+            <h5 class="mt-3">El enlace no es válido o ha expirado</h5>
+            <p>Solicita uno nuevo</p>
+            <a href="{% url 'recuperar_password' %}" class="btn btn-primary mt-3">Solicitar nuevo enlace</a>
+        </div>
+        {% endif %}
+
+        <div class="auth-footer">
+            <p><a href="{% url 'login' %}">← Volver al login</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-wrapper {
+        min-height: calc(100vh - 160px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('{% static "img/hotel4.jpg" %}') center/cover fixed;
+    }
+    .auth-card {
+        max-width: 400px;
+        width: 100%;
+        background: white;
+        border-radius: 30px;
+        padding: 40px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    }
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+    }
+    .form-control:focus {
+        border-color: #2563eb;
+        outline: none;
+    }
+    .btn-primary {
+        width: 100%;
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .btn-primary:hover {
+        background: #1d4ed8;
+        transform: translateY(-2px);
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .auth-footer a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+    .alert-error {
+        background: #ef4444;
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,99 @@
+.habitaciones-background {
+    min-height: 100vh;
+    padding: 40px;
+    background: url("../img/hotel7.jpg") no-repeat center center fixed !important;
+}
+
+.titulo {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.habitaciones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+}
+
+.habitacion-card {
+    padding: 25px;
+    border-radius: 12px;
+    background: white;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.habitacion-card:hover {
+    transform: scale(1.05);
+}
+
+.estado-libre {
+    border: 4px solid green;
+}
+
+.estado-ocupada {
+    border: 4px solid red;
+}
+
+.estado-mantenimiento {
+    border: 4px solid gold;
+}
+
+.badge {
+    display: block;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.libre { color: green; }
+.ocupada { color: red; }
+.mantenimiento { color: goldenrod; }
+
+.btn {
+    display: inline-block;
+    padding: 8px 15px;
+    margin-top: 10px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.amarillo {
+    background: gold;
+    color: black;
+}
+
+.verde {
+    background: green;
+    color: white;
+}
+
+.btn-crear {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    background: black;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+}
+
+.acciones {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.form-background {
+    min-height: 100vh;
+    padding: 40px;
+}
+
+.form-card {
+    max-width: 400px;
+    margin: auto;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+}

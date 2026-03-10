@@ -1,0 +1,41 @@
+.btn-volver{
+position:fixed;
+top:90px;
+left:25px;
+background:white;
+padding:10px 18px;
+border-radius:12px;
+text-decoration:none;
+font-weight:bold;
+box-shadow:0 6px 18px rgba(0,0,0,.2);
+z-index:999;
+}
+
+body{
+background:url("/static/img/hotel6.jpg");
+background-size:cover;
+}
+
+.box{
+width:500px;
+margin:60px auto;
+background:white;
+padding:40px;
+border-radius:18px;
+box-shadow:0 20px 40px rgba(0,0,0,0.2);
+}
+
+input,select{
+width:100%;
+padding:12px;
+margin:8px 0;
+}
+
+button{
+width:100%;
+padding:14px;
+background:#2563eb;
+color:white;
+border:none;
+font-weight:bold;
+}

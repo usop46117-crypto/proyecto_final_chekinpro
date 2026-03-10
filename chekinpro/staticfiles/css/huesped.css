@@ -1,0 +1,52 @@
+.huesped-bg{
+    min-height:100vh;
+    background:url("/static/img/hotel6.jpg") center/cover no-repeat;
+    padding-top:40px;
+}
+
+/* caja tabla */
+
+.tabla-box{
+    background:white;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 15px 35px rgba(0,0,0,.2);
+}
+
+/* checkout */
+
+.btn-checkout{
+    background:#ef4444;
+    color:white;
+    padding:7px 14px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.btn-checkout:hover{
+    background:#dc2626;
+    color:white;
+}
+
+/* buscador */
+
+.buscador{
+    display:flex;
+    gap:10px;
+}
+
+.buscador input{
+    padding:10px;
+    border-radius:8px;
+    border:none;
+    width:280px;
+}
+
+.buscador button{
+    background:#38bdf8;
+    border:none;
+    padding:10px 18px;
+    color:white;
+    border-radius:8px;
+}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-plus"></i> Agregar Acompañante</h4>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">
+                        <strong>Huésped:</strong> {{ huesped.nombre }}<br>
+                        <strong>Documento:</strong> {{ huesped.documento }}
+                    </p>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="form-group mb-3">
+                            <label>Nombre del acompañante *</label>
+                            <input type="text" name="nombre" class="form-control" placeholder="Ej: María Pérez" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Documento (opcional)</label>
+                            <input type="text" name="documento" class="form-control" placeholder="Ej: 12345678">
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'huespedes:por_huesped' huesped.id %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Agregar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+    .form-control {
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 10px;
+    }
+    .form-control:focus {
+        border-color: #c49b3f;
+        outline: none;
+    }
+    label {
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>
+            <i class="bi bi-person-badge"></i> 
+            Detalles del Huésped
+        </h2>
+        <a href="{% url 'huespedes:huespedes_lista' %}?hotel={{ huesped.hotel.id }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Información del huésped -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person"></i> Información Personal</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Nombre:</strong> {{ huesped.nombre }}</p>
+                    <p><strong>Documento:</strong> {{ huesped.documento }}</p>
+                    <p><strong>Teléfono:</strong> {{ huesped.telefono }}</p>
+                    {% if huesped.correo %}
+                    <p><strong>Email:</strong> {{ huesped.correo }}</p>
+                    {% endif %}
+                    {% if huesped.tiene_vehiculo %}
+                    <p><strong>Vehículo:</strong> {{ huesped.placa }}</p>
+                    {% endif %}
+                </div>
+                {% if user.rol == 'recep' %}
+                <div class="card-footer">
+                    <a href="{% url 'huespedes:huesped_editar' huesped.id %}" class="btn btn-warning btn-sm w-100">
+                        <i class="bi bi-pencil"></i> Editar Huésped
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Acompañantes -->
+            <div class="card">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> Acompañantes</h5>
+                    {% if user.rol == 'recep' %}
+                    <a href="{% url 'huespedes:agregar_acompanante' huesped.id %}" class="btn btn-sm btn-light">
+                        <i class="bi bi-plus-circle"></i> Agregar
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if acompanantes %}
+                        <div class="list-group">
+                            {% for a in acompanantes %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ a.nombre }}</strong>
+                                    {% if a.documento %}
+                                    <br><small class="text-muted">Doc: {{ a.documento }}</small>
+                                    {% endif %}
+                                </div>
+                                {% if user.rol == 'recep' %}
+                                <a href="{% url 'huespedes:eliminar_acompanante' a.id %}" class="btn btn-sm btn-danger" 
+                                   onclick="return confirm('¿Eliminar acompañante {{ a.nombre }}?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No hay acompañantes</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial de reservas -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Historial de Reservas</h5>
+                </div>
+                <div class="card-body">
+                    {% if reservas %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Habitación</th>
+                                        <th>Entrada</th>
+                                        <th>Salida</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for r in reservas %}
+                                    <tr>
+                                        <td>{{ r.id }}</td>
+                                        <td>#{{ r.habitacion.numero }}</td>
+                                        <td>{{ r.fecha_entrada|date:"d/m/Y" }}</td>
+                                        <td>{{ r.fecha_salida|date:"d/m/Y" }}</td>
+                                        <td>
+                                            {% if r.activa %}
+                                            <span class="badge bg-success">Activa</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Finalizada</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'reservas:detalle_reserva' r.id %}" class="btn btn-sm btn-info">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No hay reservas para este huésped</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

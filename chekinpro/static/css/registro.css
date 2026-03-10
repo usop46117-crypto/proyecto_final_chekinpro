@@ -1,0 +1,12 @@
+/* REGISTRO FONDO HOTEL2 */
+
+.register-wrapper{
+    min-height:100vh;
+    background:
+        linear-gradient(rgba(0,0,0,0.65),rgba(0,0,0,0.65))
+        url("../registro/img/hotel2.jpg") center/cover no-repeat;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}

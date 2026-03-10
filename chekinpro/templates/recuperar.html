@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2><i class="bi bi-key"></i> Recuperar Contraseña</h2>
+        
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <p class="text-muted mb-4">Ingresa tu correo electrónico y te enviaremos un enlace para recuperar tu contraseña.</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label><i class="bi bi-envelope"></i> Email</label>
+                <input type="email" name="email" class="form-control" placeholder="tucorreo@ejemplo.com" required>
+            </div>
+
+            <button type="submit" class="btn-primary">Enviar enlace</button>
+        </form>
+
+        <div class="auth-footer">
+            <p><a href="{% url 'login' %}">← Volver al login</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-wrapper {
+        min-height: calc(100vh - 160px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('{% static "img/hotel-bg.jpg" %}') center/cover fixed;
+    }
+    .auth-card {
+        max-width: 400px;
+        width: 100%;
+        background: white;
+        border-radius: 30px;
+        padding: 40px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    }
+    h2 {
+        text-align: center;
+        color: #1f2937;
+        margin-bottom: 20px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+    }
+    .btn-primary {
+        width: 100%;
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 14px;
+        border-radius: 50px;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .auth-footer {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .auth-footer a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+    .alert {
+        padding: 12px 20px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        color: white;
+    }
+    .alert-success { background: #10b981; }
+    .alert-error { background: #ef4444; }
+</style>
+{% endblock %}

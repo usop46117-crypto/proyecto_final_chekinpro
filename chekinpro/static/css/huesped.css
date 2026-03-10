@@ -1,0 +1,57 @@
+body {
+    background: url("../img/hotel8.jpg") no-repeat center center fixed;
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh;
+}
+
+.btn-volver {
+    position: fixed;
+    top: 90px;
+    left: 25px;
+    background: white;
+    padding: 10px 18px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: bold;
+    box-shadow: 0 6px 18px rgba(255, 255, 255, 0.2);
+    z-index: 999;
+}
+
+.grid-hotel {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 25px;
+}
+
+.card-hotel {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.2);
+    text-align: center;
+}
+
+.precio {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.estado {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.verde { color: green; }
+.rojo { color: red; }
+.amarillo { color: #c59b00; }
+
+.btn-mante {
+    display: inline-block;
+    margin-top: 10px;
+    background: #ff9800;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+}

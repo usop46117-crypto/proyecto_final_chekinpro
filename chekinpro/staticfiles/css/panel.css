@@ -1,0 +1,98 @@
+body{
+    background: url("/static/img/hotel5.jpg") no-repeat center center fixed;
+    background-size: cover;
+}
+
+
+body::before{
+    content:"";
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.35);
+    z-index:-1;
+}
+
+/* Todo lo demás queda IGUAL */
+.stat-card {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.stat-card h1 {
+    font-size: 42px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.libre { border-top: 6px solid #00c853; }
+.ocupada { border-top: 6px solid #ff1744; }
+.mante { border-top: 6px solid #ff9100; }
+
+.panel-btn {
+    display: block;
+    background: white;
+    padding: 40px;
+    border-radius: 18px;
+    text-decoration: none;
+    color: black;
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.12);
+    transition: 0.3s;
+}
+
+.panel-btn span {
+    display: block;
+    font-size: 14px;
+    font-weight: normal;
+    margin-top: 8px;
+    color: #666;
+}
+
+.panel-btn:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.18);
+}
+
+h2{
+    color: blanchedalmond;
+}
+
+.panel-container{
+    background:#f4f6f9;
+    min-height:100vh;
+    padding:60px 30px;
+}
+
+.card-panel{
+    background:white;
+    border-radius:15px;
+    padding:30px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom:40px;
+}
+
+.table thead{
+    background:#0d1b2a;
+    color:white;
+}
+
+.btn-checkout{
+    background:#dc3545;
+    color:white;
+    border:none;
+    padding:6px 12px;
+    border-radius:6px;
+    text-decoration:none;
+}
+
+.btn-checkout:hover{
+    background:#bb2d3b;
+}

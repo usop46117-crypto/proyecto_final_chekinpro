@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="huesped-bg">
+    <div class="huesped-overlay"></div>
+    <div class="huesped-container">
+        
+        <!-- Header del Hotel -->
+        <div class="hotel-header">
+            <div class="hotel-info">
+                {% if huesped.hotel.logo %}
+                <img src="{{ huesped.hotel.logo.url }}" alt="{{ huesped.hotel.nombre }}" class="hotel-logo">
+                {% else %}
+                <div class="hotel-icon">
+                    <i class="bi bi-building"></i>
+                </div>
+                {% endif %}
+                <div>
+                    <h2>{{ huesped.hotel.nombre }}</h2>
+                    <p class="hotel-address"><i class="bi bi-geo-alt-fill"></i> {{ huesped.hotel.direccion }}</p>
+                </div>
+            </div>
+            <div class="user-role">
+                <span class="role-badge {% if user.rol == 'admin' %}admin{% else %}recep{% endif %}">
+                    <i class="bi bi-person-badge"></i> 
+                    {% if user.rol == 'admin' %}ADMINISTRADOR{% else %}RECEPCIONISTA{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Título y botón volver -->
+        <div class="page-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <h1 class="page-title">
+                    <i class="bi bi-person-circle"></i> 
+                    {{ huesped.nombre }}
+                </h1>
+                <a href="{% url 'huespedes:huespedes_lista' %}?hotel={{ huesped.hotel.id }}" class="btn-volver">
+                    <i class="bi bi-arrow-left"></i> Volver a Huéspedes
+                </a>
+            </div>
+            <p class="page-subtitle">{{ huesped.documento }} • {{ huesped.telefono }}</p>
+        </div>
+
+        <!-- Datos del huésped -->
+        <div class="info-card">
+            <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                <div><strong>Documento:</strong> {{ huesped.documento }}</div>
+                <div><strong>Teléfono:</strong> {{ huesped.telefono }}</div>
+                {% if huesped.email %}<div><strong>Email:</strong> {{ huesped.email }}</div>{% endif %}
+                {% if huesped.tiene_vehiculo %}<div><strong>Vehículo:</strong> {{ huesped.placa }}</div>{% endif %}
+            </div>
+        </div>
+
+        <!-- TABLA DE RESERVAS - SIMPLE Y FUNCIONAL -->
+        <div class="table-container">
+            <div class="table-header">
+                <i class="bi bi-calendar-check"></i>
+                <h3>Reservas del Huésped</h3>
+                <span class="total-badge">{{ reservas|length }} reserva(s)</span>
+            </div>
+            
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 2px solid #c49b3f;">
+                            <th style="padding: 15px; text-align: left;">HABITACIÓN</th>
+                            <th style="padding: 15px; text-align: left;">ENTRADA</th>
+                            <th style="padding: 15px; text-align: left;">SALIDA</th>
+                            <th style="padding: 15px; text-align: left;">ESTADO</th>
+                            <th style="padding: 15px; text-align: left;">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in reservas %}
+                        <tr style="border-bottom: 1px solid #e2e8f0; {% if r.activa %}background: rgba(16, 185, 129, 0.05);{% endif %}">
+                            <td style="padding: 15px;">
+                                <strong>#{{ r.habitacion.numero }}</strong><br>
+                                <small style="color: #64748b;">{{ r.habitacion.tipo }}</small>
+                            </td>
+                            <td style="padding: 15px;">
+                                <i class="bi bi-calendar-plus" style="color: #c49b3f; margin-right: 5px;"></i>
+                                {{ r.fecha_entrada|date:"d/m/Y" }}
+                            </td>
+                            <td style="padding: 15px;">
+                                <i class="bi bi-calendar-x" style="color: #c49b3f; margin-right: 5px;"></i>
+                                {{ r.fecha_salida|date:"d/m/Y" }}
+                            </td>
+                            <td style="padding: 15px;">
+                                {% if r.activa %}
+                                <span style="background: rgba(16, 185, 129, 0.1); color: #059669; padding: 5px 12px; border-radius: 30px; font-size: 13px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3);">
+                                    <i class="bi bi-check-circle"></i> Activa
+                                </span>
+                                {% else %}
+                                <span style="background: rgba(100, 116, 139, 0.1); color: #475569; padding: 5px 12px; border-radius: 30px; font-size: 13px; font-weight: 600; border: 1px solid rgba(100, 116, 139, 0.3);">
+                                    <i class="bi bi-check-circle-fill"></i> Finalizada
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 15px;">
+                                <div style="display: flex; gap: 8px;">
+                                    
+                                    {% if r.activa and user.rol == 'recep' %}
+                                    <a href="#" onclick="return confirmarCheckout('{% url 'reservas:checkout_manual' r.id %}?hotel={{ huesped.hotel.id }}', '{{ huesped.nombre }}', '{{ r.habitacion.numero }}')" 
+                                       style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: rgba(16, 185, 129, 0.1); color: #059669; border-radius: 10px; text-decoration: none;"
+                                       title="Realizar Checkout">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" style="padding: 50px; text-align: center; color: #94a3b8;">
+                                <i class="bi bi-calendar-x" style="font-size: 48px; display: block; margin-bottom: 10px; color: rgba(196, 155, 63, 0.3);"></i>
+                                <p>No hay reservas para este huésped</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Acompañantes -->
+        {% if acompanantes %}
+        <div class="acompanantes-section">
+            <div class="section-header">
+                <i class="bi bi-people-fill"></i>
+                <h3>Acompañantes ({{ acompanantes|length }})</h3>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 15px;">
+                {% for a in acompanantes %}
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 15px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <i class="bi bi-person-badge" style="color: #c49b3f;"></i>
+                    <div>
+                        <strong>{{ a.nombre }}</strong>
+                        {% if a.documento %}<br><small>Doc: {{ a.documento }}</small>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Mensaje para administradores -->
+        {% if user.rol == 'admin' %}
+        <div style="background: rgba(59, 130, 246, 0.1); backdrop-filter: blur(10px); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 10px; color: white; margin-top: 20px;">
+            <i class="bi bi-info-circle-fill" style="color: #3b82f6;"></i>
+            <span>Modo visualización. Solo los recepcionistas pueden realizar checkout.</span>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<!-- SweetAlert2 Script para checkout -->
+<script>
+    function confirmarCheckout(url, nombre, habitacion) {
+        Swal.fire({
+            title: '¿Realizar Checkout?',
+            html: `¿Confirmar checkout para <strong>${nombre}</strong> de la habitación <strong>#${habitacion}</strong>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, hacer checkout',
+            cancelButtonText: 'Cancelar',
+            background: '#1e293b',
+            color: '#fff',
+            iconColor: '#c49b3f',
+            backdrop: 'rgba(0,0,0,0.7)'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = url;
+            }
+        });
+        return false;
+    }
+
+    // También mostrar mensajes de Django con SweetAlert
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if messages %}
+            {% for message in messages %}
+                Swal.fire({
+                    icon: '{{ message.tags }}' === 'error' ? 'error' : 
+                          '{{ message.tags }}' === 'warning' ? 'warning' : 'success',
+                    title: '{{ message.tags|capfirst }}',
+                    text: '{{ message|escapejs }}',
+                    timer: 4000,
+                    timerProgressBar: true,
+                    showConfirmButton: true,
+                    confirmButtonColor: '#c49b3f',
+                    background: '#1e293b',
+                    color: '#fff',
+                    iconColor: '{{ message.tags }}' === 'error' ? '#ef4444' : 
+                               '{{ message.tags }}' === 'warning' ? '#f59e0b' : '#10b981',
+                    backdrop: 'rgba(0,0,0,0.7)'
+                });
+            {% endfor %}
+        {% endif %}
+    });
+</script>
+
+<style>
+    /* FONDO */
+    .huesped-bg {
+        min-height: calc(100vh - 80px);
+        background: url('{% static "img/hotell12.jpg" %}') center/cover fixed;
+        position: relative;
+        padding: 30px 20px;
+    }
+    
+    .huesped-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(10, 20, 30, 0.85), rgba(10, 20, 30, 0.75));
+        backdrop-filter: blur(2px);
+        pointer-events: none;
+    }
+    
+    .huesped-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* HEADER DEL HOTEL */
+    .hotel-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 20px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(196, 155, 63, 0.2);
+    }
+    
+    .hotel-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .hotel-logo {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        object-fit: cover;
+        border: 2px solid #c49b3f;
+    }
+    
+    .hotel-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: white;
+    }
+    
+    .hotel-info h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    .hotel-address {
+        margin: 4px 0 0;
+        color: #64748b;
+        font-size: 14px;
+    }
+    
+    .role-badge {
+        padding: 8px 20px;
+        border-radius: 40px;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .role-badge.admin {
+        background: #c49b3f;
+        color: #0a141e;
+    }
+    
+    .role-badge.recep {
+        background: #2563eb;
+        color: white;
+    }
+    
+    /* PAGE HEADER */
+    .page-header {
+        margin-bottom: 20px;
+    }
+    
+    .page-title {
+        font-size: 32px;
+        font-weight: 800;
+        color: white;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .page-title i {
+        color: #c49b3f;
+    }
+    
+    .page-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 16px;
+        margin: 8px 0 0;
+    }
+    
+    .btn-volver {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50px;
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .btn-volver:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(-3px);
+    }
+    
+    /* INFO CARD */
+    .info-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 20px 25px;
+        margin-bottom: 25px;
+        border: 1px solid rgba(196, 155, 63, 0.2);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* TABLE CONTAINER */
+    .table-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 25px;
+    }
+    
+    .table-header {
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        padding: 18px 25px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .table-header i {
+        font-size: 22px;
+        color: #0a141e;
+    }
+    
+    .table-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #0a141e;
+        flex: 1;
+    }
+    
+    .total-badge {
+        background: rgba(10, 20, 30, 0.2);
+        color: #0a141e;
+        padding: 5px 15px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    /* ACOMPAÑANTES */
+    .acompanantes-section {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #c49b3f;
+    }
+    
+    .section-header i {
+        font-size: 22px;
+        color: #c49b3f;
+    }
+    
+    .section-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e293b;
+    }
+</style>
+{% endblock %}

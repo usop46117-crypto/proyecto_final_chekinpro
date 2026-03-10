@@ -1,0 +1,703 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="page-bg">
+    <div class="page-container">
+        <!-- Header con navegación -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h2 class="page-title">
+                <i class="bi bi-person-gear"></i> Gestión Recepcionista
+            </h2>
+            <a href="{% url 'panel_hotel' hotel.id %}" class="btn-volver">
+                <i class="bi bi-arrow-left"></i> Volver a {{ hotel.nombre }}
+            </a>
+        </div>
+
+        <!-- Tarjeta de información del hotel -->
+        <div class="hotel-info-card mb-4">
+            <div class="hotel-info-header">
+                <i class="bi bi-building"></i>
+                <h3>{{ hotel.nombre }}</h3>
+            </div>
+            <div class="hotel-info-body">
+                <div class="hotel-info-row">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <span>{{ hotel.direccion }}</span>
+                </div>
+                <div class="hotel-info-row">
+                    <i class="bi bi-telephone-fill"></i>
+                    <span>{{ hotel.telefono }}</span>
+                </div>
+                <div class="hotel-info-row">
+                    <i class="bi bi-envelope-fill"></i>
+                    <span>{{ hotel.email }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="custom-alert alert-{{ message.tags }}">
+                <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' %}exclamation-circle-fill{% else %}info-circle-fill{% endif %}"></i>
+                {{ message }}
+                <button type="button" class="alert-close" onclick="this.parentElement.remove()">×</button>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="row g-4">
+            <!-- Columna izquierda - Recepcionista Actual -->
+            <div class="col-md-6">
+                <div class="elegant-card">
+                    <div class="card-header-primary">
+                        <i class="bi bi-person-badge"></i>
+                        <h4>Recepcionista Actual</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if recepcionista_actual %}
+                        <div class="recepcionista-actual">
+                            <div class="avatar-large">
+                                <span class="avatar-text">{{ recepcionista_actual.username|first|upper }}</span>
+                            </div>
+                            <div class="recepcionista-info">
+                                <h5 class="recepcionista-nombre">{{ recepcionista_actual.username }}</h5>
+                                <span class="badge-recepcionista">Recepcionista</span>
+                                
+                                <div class="info-list">
+                                    <div class="info-list-item">
+                                        <i class="bi bi-envelope-fill"></i>
+                                        <span class="info-label">Email:</span>
+                                        <span class="info-value">{{ recepcionista_actual.email }}</span>
+                                    </div>
+                                    <div class="info-list-item">
+                                        <i class="bi bi-person-fill"></i>
+                                        <span class="info-label">Nombre:</span>
+                                        <span class="info-value">{{ recepcionista_actual.first_name|default:"No especificado" }} {{ recepcionista_actual.last_name|default:"" }}</span>
+                                    </div>
+                                    <div class="info-list-item">
+                                        <i class="bi bi-clock-history"></i>
+                                        <span class="info-label">Último acceso:</span>
+                                        <span class="info-value">{{ recepcionista_actual.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</span>
+                                    </div>
+                                </div>
+
+                                <form method="POST" onsubmit="return confirm('¿Estás seguro de quitar a {{ recepcionista_actual.username }}?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="accion" value="quitar">
+                                    <button type="submit" class="btn-quitar">
+                                        <i class="bi bi-person-x"></i>
+                                        Quitar Recepcionista
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-person-exclamation"></i>
+                            </div>
+                            <h5>No hay recepcionista asignado</h5>
+                            <p class="text-muted">Este hotel no tiene recepcionista actualmente</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Columna derecha - Asignar Nuevo Recepcionista -->
+            <div class="col-md-6">
+                <div class="elegant-card">
+                    <div class="card-header-success">
+                        <i class="bi bi-person-plus"></i>
+                        <h4>Asignar Nuevo Recepcionista</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if recepcionistas_disponibles %}
+                        <form method="POST" class="asignar-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="accion" value="asignar">
+                            
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i class="bi bi-person-badge"></i>
+                                    Seleccionar Recepcionista
+                                </label>
+                                <select name="email" class="form-select" required>
+                                    <option value="">-- Elige un recepcionista --</option>
+                                    {% for r in recepcionistas_disponibles %}
+                                    <option value="{{ r.email }}">{{ r.username }} - {{ r.email }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <button type="submit" class="btn-asignar">
+                                <i class="bi bi-person-check"></i>
+                                Asignar Recepcionista
+                            </button>
+                        </form>
+
+                        <div class="divider">
+                            <span>o</span>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="text-muted mb-3">¿No encuentras el recepcionista que buscas?</p>
+                            <a href="{% url 'agregar_recepcionista' hotel.id %}" class="btn-crear">
+                                <i class="bi bi-person-plus"></i>
+                                Crear Nuevo Recepcionista
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h5>No hay recepcionistas disponibles</h5>
+                            <p class="text-muted">Todos los recepcionistas ya están asignados a otros hoteles</p>
+                            <a href="{% url 'agregar_recepcionista' hotel.id %}" class="btn-crear mt-3">
+                                <i class="bi bi-person-plus"></i>
+                                Crear Nuevo Recepcionista
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Fondo hotell12 */
+    .page-bg {
+        min-height: calc(100vh - 80px);
+        background: url('{% static "img/hotell12.jpg" %}') no-repeat center center fixed;
+        background-size: cover;
+        padding: 40px 20px;
+        position: relative;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    .page-bg::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.2);
+        z-index: 0;
+    }
+
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Título */
+    .page-title {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        margin: 0;
+    }
+
+    .page-title i {
+        color: #c49b3f;
+        margin-right: 12px;
+    }
+
+    /* Botón volver */
+    .btn-volver {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 12px 24px;
+        border-radius: 50px;
+        text-decoration: none;
+        color: #1e293b;
+        font-weight: 500;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-volver:hover {
+        transform: translateX(-5px);
+        background: white;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Tarjeta de información del hotel */
+    .hotel-info-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .hotel-info-header {
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        padding: 18px 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .hotel-info-header i {
+        font-size: 24px;
+        color: #0a141e;
+    }
+
+    .hotel-info-header h3 {
+        margin: 0;
+        color: #0a141e;
+        font-weight: 700;
+        font-size: 1.4rem;
+    }
+
+    .hotel-info-body {
+        padding: 20px 25px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .hotel-info-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #1e293b;  /* Texto en negro visible */
+        font-weight: 500;
+    }
+
+    .hotel-info-row i {
+        color: #c49b3f;
+        font-size: 1.2rem;
+        width: 20px;
+    }
+
+    .hotel-info-row span {
+        color: #1e293b;  /* Texto en negro */
+        font-size: 1rem;
+    }
+
+    /* Tarjetas elegantes */
+    .elegant-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        height: 100%;
+        transition: transform 0.3s;
+    }
+
+    .elegant-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-header-primary {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        padding: 20px 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .card-header-primary i {
+        font-size: 24px;
+        color: white;
+    }
+
+    .card-header-primary h4 {
+        margin: 0;
+        color: white;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .card-header-success {
+        background: linear-gradient(135deg, #059669, #10b981);
+        padding: 20px 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .card-header-success i {
+        font-size: 24px;
+        color: white;
+    }
+
+    .card-header-success h4 {
+        margin: 0;
+        color: white;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .card-body {
+        padding: 30px;
+    }
+
+    /* Recepcionista actual */
+    .recepcionista-actual {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .avatar-large {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        box-shadow: 0 15px 30px rgba(196, 155, 63, 0.3);
+        border: 4px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .avatar-text {
+        font-size: 48px;
+        font-weight: 700;
+        color: #0a141e;
+    }
+
+    .recepcionista-nombre {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1e293b;  /* Texto en negro */
+        margin: 0 0 10px;
+    }
+
+    .badge-recepcionista {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 6px 20px;
+        border-radius: 30px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Lista de información */
+    .info-list {
+        width: 100%;
+        background: #f8fafc;
+        border-radius: 20px;
+        padding: 20px;
+        margin: 20px 0;
+        text-align: left;
+    }
+
+    .info-list-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(203, 213, 225, 0.5);
+        color: #1e293b;  /* Texto en negro */
+    }
+
+    .info-list-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-list-item i {
+        color: #c49b3f;
+        font-size: 1.1rem;
+        width: 24px;
+        margin-right: 10px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #64748b;
+        width: 120px;
+        font-size: 0.95rem;
+    }
+
+    .info-value {
+        flex: 1;
+        color: #1e293b;  /* Texto en negro */
+        font-weight: 500;
+    }
+
+    /* Botones */
+    .btn-quitar {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        border: none;
+        padding: 14px 24px;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-quitar:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-asignar {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 14px 24px;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-asignar:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-crear {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        padding: 14px 24px;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-crear:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Formulario */
+    .asignar-form {
+        margin-bottom: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #1e293b;  /* Texto en negro */
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+    }
+
+    .form-label i {
+        color: #c49b3f;
+        margin-right: 8px;
+    }
+
+    .form-select {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid #e2e8f0;
+        border-radius: 16px;
+        font-size: 0.95rem;
+        color: #1e293b;  /* Texto en negro */
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .form-select:focus {
+        border-color: #c49b3f;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(196, 155, 63, 0.15);
+    }
+
+    .form-select option {
+        color: #1e293b;  /* Texto en negro */
+    }
+
+    /* Divisor */
+    .divider {
+        text-align: center;
+        margin: 25px 0;
+        position: relative;
+    }
+
+    .divider span {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 0 20px;
+        color: #64748b;
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+    }
+
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(to right, transparent, #c49b3f, transparent);
+        z-index: 0;
+    }
+
+    /* Estado vacío */
+    .empty-state {
+        text-align: center;
+        padding: 30px 0;
+    }
+
+    .empty-icon {
+        width: 100px;
+        height: 100px;
+        background: rgba(196, 155, 63, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+    }
+
+    .empty-icon i {
+        font-size: 48px;
+        color: #c49b3f;
+    }
+
+    .empty-state h5 {
+        color: #1e293b;  /* Texto en negro */
+        font-weight: 600;
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+
+    .text-muted {
+        color: #64748b !important;
+    }
+
+    /* Alertas */
+    .custom-alert {
+        padding: 16px 20px;
+        border-radius: 16px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+        position: relative;
+        animation: slideIn 0.3s;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        border-left: 5px solid #10b981;
+        color: #065f46;
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        border-left: 5px solid #ef4444;
+        color: #b91c1c;
+    }
+
+    .alert-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: inherit;
+        opacity: 0.7;
+        transition: 0.3s;
+    }
+
+    .alert-close:hover {
+        opacity: 1;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 2rem;
+        }
+        
+        .hotel-info-body {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .info-list-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        
+        .info-label {
+            width: auto;
+        }
+        
+        .btn-volver {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+    }
+</style>
+{% endblock %}

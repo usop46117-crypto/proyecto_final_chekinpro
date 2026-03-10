@@ -1,0 +1,395 @@
+<!-- reservas/templates/reservas/detalle.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle de Reserva #{{ reserva.id }}{% endblock %}
+
+{% block content %}
+<div class="detalle-wrapper">
+    <!-- HEADER CON NAVEGACIÓN -->
+    <div class="detalle-header">
+        <div class="header-left">
+            <a href="javascript:history.back()" class="btn-volver-detalle">
+                <i class="bi bi-arrow-left"></i> Volver al Historial
+            </a>
+            <h1>
+                <i class="bi bi-receipt"></i> 
+                Detalle de Reserva #{{ reserva.id }}
+            </h1>
+        </div>
+        <div class="header-right">
+            <span class="badge-estado {{ reserva.estado|lower }}">
+                {% if reserva.estado == 'checkout' %}
+                    <i class="bi bi-check-circle"></i> Checkout Realizado
+                {% elif reserva.estado == 'checkin' %}
+                    <i class="bi bi-box-arrow-in-right"></i> Checkin Activo
+                {% else %}
+                    <i class="bi bi-clock"></i> {{ reserva.estado }}
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- INFORMACIÓN DEL HOTEL (para que el admin sepa a qué hotel pertenece) -->
+    <div class="hotel-banner">
+        <i class="bi bi-building"></i>
+        <strong>Hotel:</strong> {{ hotel.nombre }}
+        {% if hotel.direccion %}
+        <span class="separator">|</span>
+        <i class="bi bi-geo-alt"></i> {{ hotel.direccion }}
+        {% endif %}
+    </div>
+
+    <!-- GRID DE INFORMACIÓN -->
+    <div class="detalle-grid">
+        <!-- COLUMNA IZQUIERDA - INFO PRINCIPAL -->
+        <div class="detalle-card info-principal">
+            <h3><i class="bi bi-person-badge"></i> Información del Huésped</h3>
+            <div class="info-grupo">
+                <div class="info-item">
+                    <label>Nombre completo:</label>
+                    <span class="valor">{{ reserva.huesped.nombre }} {{ reserva.huesped.apellidos }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Documento:</label>
+                    <span class="valor">{{ reserva.huesped.tipo_documento }} {{ reserva.huesped.numero_documento }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Teléfono:</label>
+                    <span class="valor">{{ reserva.huesped.telefono }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Email:</label>
+                    <span class="valor">{{ reserva.huesped.email }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA - INFO DE LA RESERVA -->
+        <div class="detalle-card info-reserva">
+            <h3><i class="bi bi-door-open"></i> Información de la Reserva</h3>
+            <div class="info-grupo">
+                <div class="info-item">
+                    <label>Habitación:</label>
+                    <span class="valor">{{ reserva.habitacion.numero }} - {{ reserva.habitacion.tipo }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Check-in:</label>
+                    <span class="valor">{{ reserva.fecha_checkin|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Check-out:</label>
+                    <span class="valor">{{ reserva.fecha_checkout|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Noches:</label>
+                    <span class="valor">{{ reserva.noches }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Adultos:</label>
+                    <span class="valor">{{ reserva.adultos }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Niños:</label>
+                    <span class="valor">{{ reserva.ninos|default:"0" }}</span>
+                </div>
+                {% if reserva.total_pagado %}
+                <div class="info-item total">
+                    <label>Total pagado:</label>
+                    <span class="valor">${{ reserva.total_pagado|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ACOMPAÑANTES (si existen) -->
+        {% if acompanantes %}
+        <div class="detalle-card acompanantes">
+            <h3><i class="bi bi-people"></i> Acompañantes ({{ acompanantes.count }})</h3>
+            <div class="tabla-acompanantes">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Documento</th>
+                            <th>Edad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for acomp in acompanantes %}
+                        <tr>
+                            <td>{{ acomp.nombre }} {{ acomp.apellidos }}</td>
+                            <td>{{ acomp.tipo_documento }} {{ acomp.numero_documento }}</td>
+                            <td>{{ acomp.edad }} años</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- NOTIFICACIÓN DE CHECKOUT -->
+        {% if reserva.estado == 'checkout' %}
+        <div class="detalle-card checkout-info">
+            <h3><i class="bi bi-bell"></i> Información del Checkout</h3>
+            <div class="info-grupo">
+                <div class="info-item">
+                    <label>Fecha de checkout:</label>
+                    <span class="valor">{{ reserva.fecha_checkout_real|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Realizado por:</label>
+                    <span class="valor">{{ reserva.checkout_por.username }} (Recepcionista)</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .detalle-wrapper {
+        padding: 30px;
+        max-width: 1400px;
+        margin: 0 auto;
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* HEADER */
+    .detalle-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .btn-volver-detalle {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 50px;
+        color: #495057;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-volver-detalle:hover {
+        background: #e9ecef;
+        transform: translateX(-3px);
+    }
+
+    .detalle-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #0a141e;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .detalle-header h1 i {
+        color: #c49b3f;
+    }
+
+    /* BADGE ESTADO */
+    .badge-estado {
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .badge-estado.checkout {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .badge-estado.checkin {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .badge-estado.pendiente {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    /* BANNER HOTEL */
+    .hotel-banner {
+        background: linear-gradient(135deg, #0a141e, #1a2732);
+        color: white;
+        padding: 15px 25px;
+        border-radius: 50px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .hotel-banner i {
+        color: #c49b3f;
+    }
+
+    .separator {
+        color: #c49b3f;
+        margin: 0 5px;
+    }
+
+    /* GRID */
+    .detalle-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+
+    .detalle-card {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        border: 1px solid rgba(196, 155, 63, 0.2);
+    }
+
+    .detalle-card h3 {
+        font-size: 18px;
+        color: #0a141e;
+        margin: 0 0 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid rgba(196, 155, 63, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .detalle-card h3 i {
+        color: #c49b3f;
+    }
+
+    .info-grupo {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .info-item label {
+        font-weight: 600;
+        color: #6c757d;
+        min-width: 120px;
+        font-size: 14px;
+    }
+
+    .info-item .valor {
+        color: #0a141e;
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .info-item.total {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 2px dashed #c49b3f;
+    }
+
+    .info-item.total label {
+        color: #c49b3f;
+    }
+
+    .info-item.total .valor {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0a141e;
+    }
+
+    /* TABLA ACOMPAÑANTES */
+    .acompanantes {
+        grid-column: span 2;
+    }
+
+    .tabla-acompanantes {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 12px;
+        background: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #dee2e6;
+        color: #0a141e;
+    }
+
+    tr:hover {
+        background: #f8f9fa;
+    }
+
+    /* CHECKOUT INFO */
+    .checkout-info {
+        grid-column: span 2;
+        background: linear-gradient(135deg, #fff, #f8f9fa);
+        border-left: 4px solid #28a745;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+        .detalle-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .acompanantes,
+        .checkout-info {
+            grid-column: span 1;
+        }
+        
+        .detalle-wrapper {
+            padding: 20px;
+        }
+        
+        .info-item {
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .info-item label {
+            min-width: auto;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-white">
+                    <h4 class="mb-0"><i class="bi bi-gear"></i> Configuración</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Configuración de la cuenta</p>
+                    
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-bell me-2"></i>
+                                <span>Notificaciones</span>
+                            </div>
+                            <span class="badge bg-primary">Próximamente</span>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-shield me-2"></i>
+                                <span>Seguridad</span>
+                            </div>
+                            <span class="badge bg-primary">Próximamente</span>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-palette me-2"></i>
+                                <span>Apariencia</span>
+                            </div>
+                            <span class="badge bg-primary">Próximamente</span>
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'panel' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Volver
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+    .list-group-item {
+        border: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+    .badge {
+        padding: 6px 10px;
+    }
+</style>
+{% endblock %}

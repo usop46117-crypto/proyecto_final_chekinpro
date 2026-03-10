@@ -1,0 +1,827 @@
+{% load static %}
+
+<header class="main-header">
+    <div class="header-container">
+        <!-- LOGO Y NOMBRE - SOLO EL HOTEL (SIN ENLACE) -->
+        <div class="logo">
+            {% if user.is_authenticated and hotel %}
+                <!-- TANTO ADMIN COMO RECEPCIONISTA VEN EL LOGO Y NOMBRE DEL HOTEL - SIN ENLACE -->
+                <div class="logo-link" style="cursor: default;">
+                    {% if hotel.logo %}
+                    <img src="{{ hotel.logo.url }}" alt="{{ hotel.nombre }}" class="hotel-logo">
+                    {% else %}
+                    <div class="brand-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <span class="hotel-name">{{ hotel.nombre }}</span>
+                        {% if user.rol == 'recep' %}
+                        <span class="recep-badge-header">● Recepción</span>
+                        {% else %}
+                        <span class="admin-badge-header">● Administrador</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <!-- SOLO EN HOME O SIN HOTEL -->
+                <a href="{% url 'home' %}" class="logo-link">
+                    <div class="brand-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <span class="chekinpro-name">Chekin<span class="pro">Pro</span></span>
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- NAVEGACIÓN PRINCIPAL - SOLO PARA USUARIOS AUTENTICADOS -->
+        {% if user.is_authenticated and hotel %}
+        <nav class="main-nav">
+            {% if user.rol == 'admin' %}
+                <!-- ADMIN: Navegación completa -->
+                <a href="{% url 'panel' %}" class="nav-item {% if request.path == '/panel/' %}active{% endif %}">
+                    <i class="bi bi-speedometer2"></i> <span>Panel</span>
+                </a>
+                <a href="{% url 'habitaciones:lista_habitaciones' %}?hotel={{ hotel.id }}" class="nav-item {% if '/habitaciones/' in request.path %}active{% endif %}">
+                    <i class="bi bi-door-open"></i> <span>Habitaciones</span>
+                </a>
+                <a href="{% url 'huespedes:huespedes_lista' %}?hotel={{ hotel.id }}" class="nav-item {% if '/huespedes/' in request.path %}active{% endif %}">
+                    <i class="bi bi-people"></i> <span>Huéspedes</span>
+                </a>
+                <a href="{% url 'reservas:historial' %}?hotel={{ hotel.id }}" class="nav-item {% if '/historial/' in request.path %}active{% endif %}">
+                    <i class="bi bi-clock-history"></i> <span>Historial</span>
+                </a>
+                <a href="{% url 'gestionar_recepcionista' hotel.id %}" class="nav-item {% if '/gestionar_recepcionista/' in request.path %}active{% endif %}">
+                    <i class="bi bi-person-gear"></i> <span>Recepcionista</span>
+                </a>
+            {% else %}
+                <!-- RECEPCIONISTA: Navegación con opción de crear reserva -->
+                <a href="{% url 'panel' %}" class="nav-item {% if request.path == '/panel/' %}active{% endif %}">
+                    <i class="bi bi-speedometer2"></i> <span>Panel</span>
+                </a>
+                <a href="{% url 'habitaciones:lista_habitaciones' %}?hotel={{ hotel.id }}" class="nav-item {% if '/habitaciones/' in request.path %}active{% endif %}">
+                    <i class="bi bi-door-open"></i> <span>Habitaciones</span>
+                </a>
+                <a href="{% url 'huespedes:huespedes_lista' %}?hotel={{ hotel.id }}" class="nav-item {% if '/huespedes/' in request.path %}active{% endif %}">
+                    <i class="bi bi-people"></i> <span>Huéspedes</span>
+                </a>
+                <a href="{% url 'reservas:historial' %}?hotel={{ hotel.id }}" class="nav-item {% if '/historial/' in request.path %}active{% endif %}">
+                    <i class="bi bi-clock-history"></i> <span>Historial</span>
+                </a>
+                <a href="{% url 'reservas:crear_reservas' %}?hotel={{ hotel.id }}" class="nav-item {% if '/crear_reservas/' in request.path %}active{% endif %}">
+                    <i class="bi bi-calendar-plus"></i> <span>Nueva Reserva</span>
+                </a>
+            {% endif %}
+        </nav>
+        {% endif %}
+
+        <!-- SECCIÓN DERECHA (USUARIO) -->
+        <div class="right-section">
+            {% if user.is_authenticated %}
+                
+                <!-- NOTIFICACIONES - SOLO PARA ADMINISTRADORES -->
+                {% if user.rol == 'admin' %}
+                <div class="notifications-dropdown">
+                    <button class="notifications-button" id="notificationsButton">
+                        <i class="bi bi-bell"></i>
+                        {% if notificaciones_no_leidas > 0 %}
+                        <span class="notification-badge">{{ notificaciones_no_leidas }}</span>
+                        {% endif %}
+                    </button>
+                    <div class="notifications-menu" id="notificationsDropdown">
+                        <div class="notifications-header">
+                            <span>Notificaciones</span>
+                            {% if notificaciones_no_leidas > 0 %}
+                            <a href="{% url 'notificaciones:marcar_todas_leidas' %}?hotel={{ hotel.id }}" class="mark-all-read">
+                                <i class="bi bi-check2-all"></i> Marcar todas
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="notifications-list">
+                            {% for notificacion in notificaciones_recientes %}
+                            <div class="notification-item {% if not notificacion.leida %}unread{% endif %}" data-id="{{ notificacion.id }}">
+                                <div class="notification-icon">
+                                    {% if notificacion.tipo == 'creacion' %}
+                                    <i class="bi bi-plus-circle"></i>
+                                    {% elif notificacion.tipo == 'mantenimiento' %}
+                                    <i class="bi bi-tools"></i>
+                                    {% elif notificacion.tipo == 'disponible' %}
+                                    <i class="bi bi-check-circle"></i>
+                                    {% elif notificacion.tipo == 'eliminacion' %}
+                                    <i class="bi bi-trash"></i>
+                                    {% elif notificacion.tipo == 'reserva' %}
+                                    <i class="bi bi-calendar-plus"></i>
+                                    {% elif notificacion.tipo == 'checkout' %}
+                                    <i class="bi bi-box-arrow-right"></i>
+                                    {% else %}
+                                    <i class="bi bi-info-circle"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="notification-content">
+                                    <p>{{ notificacion.mensaje }}</p>
+                                    <span class="notification-time">{{ notificacion.fecha|timesince }}</span>
+                                </div>
+                                {% if not notificacion.leida %}
+                                <a href="{% url 'notificaciones:marcar_leida' notificacion.id %}?hotel={{ hotel.id }}" class="mark-read" title="Marcar como leída">
+                                    <i class="bi bi-check"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                            {% empty %}
+                            <div class="notification-empty">
+                                <i class="bi bi-bell-slash"></i>
+                                <p>No hay notificaciones</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="notifications-footer">
+                            <a href="{% url 'notificaciones:lista_notificaciones' %}?hotel={{ hotel.id }}">Ver todas</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- DROPDOWN DE USUARIO -->
+                <div class="user-dropdown">
+                    <button class="user-button" id="userMenuButton">
+                        <div class="user-avatar">{{ user.username|first|upper }}</div>
+                        <div class="user-info">
+                            <span class="user-name">{{ user.username }}</span>
+                            <span class="user-role">
+                                {% if user.rol == 'admin' %}ADMINISTRADOR{% else %}RECEPCIÓN{% endif %}
+                            </span>
+                        </div>
+                        <i class="bi bi-chevron-down dropdown-icon"></i>
+                    </button>
+                    <div class="dropdown-menu" id="userDropdown">
+                        <div class="dropdown-header">
+                            <span class="dropdown-user-name">{{ user.username }}</span>
+                            <span class="dropdown-user-email">{{ user.email }}</span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        
+                        <!-- SOLO MI PERFIL EN EL DROPDOWN -->
+                        <a class="dropdown-item" href="{% url 'perfil_hotel' %}">
+                            <i class="bi bi-person-circle"></i> Mi Perfil
+                        </a>
+                        
+                        <div class="dropdown-divider"></div>
+                        <form method="POST" action="{% url 'logout' %}" class="m-0">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item text-danger">
+                                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+            <div class="auth-buttons">
+                <a href="{% url 'saber_mas' %}" class="btn-login">Saber Mas De CheKinPro</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<style>
+    .main-header {
+        background: #0a141e;
+        border-bottom: 1px solid rgba(196, 155, 63, 0.2);
+        padding: 0 40px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        font-family: 'Inter', sans-serif;
+    }
+    
+    .header-container {
+        max-width: 1600px;
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+    
+    /* LOGO Y MARCA - SOLO HOTEL (SIN ENLACE) */
+    .logo-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+    }
+    
+    .brand-icon {
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0a141e;
+        font-size: 24px;
+        box-shadow: 0 4px 12px rgba(196, 155, 63, 0.3);
+    }
+    
+    .chekinpro-name {
+        font-size: 26px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: -0.5px;
+    }
+    
+    .chekinpro-name .pro {
+        color: #c49b3f;
+        font-weight: 800;
+    }
+    
+    .hotel-logo {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 2px solid #c49b3f;
+    }
+    
+    .hotel-name {
+        font-size: 22px;
+        font-weight: 700;
+        color: white;
+        line-height: 1.2;
+    }
+    
+    .recep-badge-header, .admin-badge-header {
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 30px;
+        margin-left: 5px;
+        display: inline-block;
+    }
+    
+    .recep-badge-header {
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .admin-badge-header {
+        color: #c49b3f;
+        background: rgba(196, 155, 63, 0.15);
+        border: 1px solid rgba(196, 155, 63, 0.3);
+    }
+    
+    /* NAVEGACIÓN PRINCIPAL */
+    .main-nav {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 4px;
+        border-radius: 60px;
+        border: 1px solid rgba(196, 155, 63, 0.15);
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 40px;
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+    
+    .nav-item i {
+        font-size: 18px;
+    }
+    
+    .nav-item:hover {
+        background: rgba(196, 155, 63, 0.1);
+        color: #c49b3f;
+    }
+    
+    .nav-item.active {
+        background: #c49b3f;
+        color: #0a141e;
+        font-weight: 600;
+    }
+    
+    .nav-item.active i {
+        color: #0a141e;
+    }
+    
+    /* SECCIÓN DERECHA */
+    .right-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    /* NOTIFICACIONES - SOLO ADMIN */
+    .notifications-dropdown {
+        position: relative;
+    }
+    
+    .notifications-button {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(196, 155, 63, 0.2);
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: white;
+        font-size: 20px;
+        position: relative;
+        transition: all 0.3s;
+    }
+    
+    .notifications-button:hover {
+        background: rgba(196, 155, 63, 0.15);
+        border-color: #c49b3f;
+        transform: scale(1.05);
+    }
+    
+    .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #ef4444;
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+        min-width: 20px;
+        height: 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 4px;
+        border: 2px solid #0a141e;
+    }
+    
+    .notifications-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 10px);
+        background: #0f1a24;
+        border: 1px solid rgba(196, 155, 63, 0.3);
+        border-radius: 16px;
+        width: 360px;
+        max-width: 90vw;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        display: none;
+        z-index: 1001;
+    }
+    
+    .notifications-menu.show {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .notifications-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(196, 155, 63, 0.2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .mark-all-read {
+        color: #c49b3f;
+        text-decoration: none;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .mark-all-read:hover {
+        color: #e4b95b;
+    }
+    
+    .notifications-list {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .notification-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(196, 155, 63, 0.1);
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        transition: background 0.2s;
+        position: relative;
+    }
+    
+    .notification-item:hover {
+        background: rgba(196, 155, 63, 0.1);
+    }
+    
+    .notification-item.unread {
+        background: rgba(196, 155, 63, 0.05);
+        border-left: 3px solid #c49b3f;
+    }
+    
+    .notification-icon {
+        width: 32px;
+        height: 32px;
+        background: rgba(196, 155, 63, 0.15);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #c49b3f;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+    
+    .notification-content {
+        flex: 1;
+    }
+    
+    .notification-content p {
+        margin: 0 0 5px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    .notification-time {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 11px;
+        display: block;
+    }
+    
+    .mark-read {
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 18px;
+        text-decoration: none;
+        transition: color 0.2s;
+        flex-shrink: 0;
+    }
+    
+    .mark-read:hover {
+        color: #10b981;
+    }
+    
+    .notification-empty {
+        padding: 40px 20px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .notification-empty i {
+        font-size: 40px;
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .notification-empty p {
+        margin: 0;
+        font-size: 14px;
+    }
+    
+    .notifications-footer {
+        padding: 12px 20px;
+        border-top: 1px solid rgba(196, 155, 63, 0.2);
+        text-align: center;
+    }
+    
+    .notifications-footer a {
+        color: #c49b3f;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    .notifications-footer a:hover {
+        color: #e4b95b;
+    }
+    
+    /* DROPDOWN DE USUARIO */
+    .user-dropdown {
+        position: relative;
+    }
+    
+    .user-button {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(196, 155, 63, 0.2);
+        border-radius: 50px;
+        padding: 6px 15px 6px 6px;
+        cursor: pointer;
+        color: white;
+        transition: all 0.3s;
+        width: 100%;
+    }
+    
+    .user-button:hover {
+        background: rgba(196, 155, 63, 0.15);
+        border-color: #c49b3f;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0a141e;
+        font-weight: 700;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: white;
+    }
+    
+    .user-role {
+        font-size: 11px;
+        color: #c49b3f;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .dropdown-icon {
+        color: #c49b3f;
+        font-size: 14px;
+        margin-left: 5px;
+        transition: transform 0.3s;
+    }
+    
+    .user-button[aria-expanded="true"] .dropdown-icon {
+        transform: rotate(180deg);
+    }
+    
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        top: calc(100% + 10px);
+        background: #0f1a24;
+        border: 1px solid rgba(196, 155, 63, 0.3);
+        border-radius: 16px;
+        padding: 8px 0;
+        min-width: 260px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        display: none;
+        z-index: 1001;
+    }
+    
+    .dropdown-menu.show {
+        display: block;
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .dropdown-header {
+        padding: 12px 16px;
+    }
+    
+    .dropdown-user-name {
+        display: block;
+        font-weight: 600;
+        color: white;
+        font-size: 15px;
+    }
+    
+    .dropdown-user-email {
+        display: block;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 12px;
+        margin-top: 4px;
+    }
+    
+    .dropdown-divider {
+        margin: 8px 0;
+        border: none;
+        border-top: 1px solid rgba(196, 155, 63, 0.2);
+    }
+    
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.2s;
+        width: 100%;
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-align: left;
+    }
+    
+    .dropdown-item i {
+        font-size: 16px;
+        width: 20px;
+        color: #c49b3f;
+    }
+    
+    .dropdown-item:hover {
+        background: rgba(196, 155, 63, 0.15);
+        color: white;
+    }
+    
+    .dropdown-item.text-danger i {
+        color: #ff6b6b;
+    }
+    
+    .dropdown-item.text-danger:hover {
+        background: rgba(255, 107, 107, 0.15);
+    }
+    
+    /* BOTONES PARA NO AUTENTICADOS */
+    .auth-buttons {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-login, .btn-registro {
+        display: inline-block;
+        padding: 8px 20px;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+    
+    .btn-login {
+        background: #c49b3f;
+        color: #0a141e;
+    }
+    
+    .btn-login:hover {
+        background: #e4b95b;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(196, 155, 63, 0.4);
+    }
+    
+    .btn-registro {
+        background: transparent;
+        border: 2px solid #c49b3f;
+        color: white;
+    }
+    
+    .btn-registro:hover {
+        background: #c49b3f;
+        color: #0a141e;
+        transform: translateY(-2px);
+    }
+    
+    /* RESPONSIVE */
+    @media (max-width: 1200px) {
+        .main-nav .nav-item span {
+            display: none;
+        }
+        .nav-item i {
+            font-size: 20px;
+        }
+    }
+    
+    @media (max-width: 900px) {
+        .main-header {
+            padding: 0 20px;
+        }
+        .user-info {
+            display: none;
+        }
+        .hotel-name {
+            font-size: 18px;
+        }
+        .recep-badge-header, .admin-badge-header {
+            display: none;
+        }
+        .auth-buttons {
+            flex-direction: column;
+        }
+        .notifications-menu {
+            width: 300px;
+        }
+    }
+    
+    @media (max-width: 700px) {
+        .main-nav {
+            display: none;
+        }
+        .hotel-name {
+            font-size: 16px;
+        }
+        .hotel-logo {
+            width: 40px;
+            height: 40px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Dropdown de usuario
+        const userButton = document.getElementById('userMenuButton');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        if (userButton && userDropdown) {
+            userButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const isExpanded = userButton.getAttribute('aria-expanded') === 'true';
+                userButton.setAttribute('aria-expanded', !isExpanded);
+                userDropdown.classList.toggle('show');
+                
+                // Cerrar notificaciones si están abiertas
+                const notificationsDropdown = document.getElementById('notificationsDropdown');
+                if (notificationsDropdown && notificationsDropdown.classList.contains('show')) {
+                    notificationsDropdown.classList.remove('show');
+                }
+            });
+        }
+        
+        // Dropdown de notificaciones (solo para admin)
+        const notificationsButton = document.getElementById('notificationsButton');
+        const notificationsDropdown = document.getElementById('notificationsDropdown');
+        
+        if (notificationsButton && notificationsDropdown) {
+            notificationsButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                notificationsDropdown.classList.toggle('show');
+                
+                // Cerrar dropdown de usuario si está abierto
+                if (userDropdown && userDropdown.classList.contains('show')) {
+                    userDropdown.classList.remove('show');
+                    if (userButton) userButton.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+        
+        // Cerrar dropdowns al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            // Cerrar dropdown de usuario
+            if (userButton && userDropdown && !userButton.contains(e.target) && !userDropdown.contains(e.target)) {
+                userButton.setAttribute('aria-expanded', 'false');
+                userDropdown.classList.remove('show');
+            }
+            
+            // Cerrar dropdown de notificaciones
+            if (notificationsButton && notificationsDropdown && !notificationsButton.contains(e.target) && !notificationsDropdown.contains(e.target)) {
+                notificationsDropdown.classList.remove('show');
+            }
+        });
+        
+        // Evitar que clicks dentro de los dropdowns los cierren
+        if (userDropdown) {
+            userDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+        
+        if (notificationsDropdown) {
+            notificationsDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+    });
+</script>

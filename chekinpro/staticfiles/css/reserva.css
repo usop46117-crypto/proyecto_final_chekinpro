@@ -1,0 +1,82 @@
+.reserva-background {
+    min-height: 100vh;
+    padding: 40px;
+    background:url("/static/img/hotel6.jpg");
+    background-size:cover;
+}
+
+.reserva-card {
+    max-width: 500px;
+    margin: auto;
+    background: white;
+    padding: 35px;
+    border-radius: 12px;
+}
+
+.campo {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.campo label {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.btn-guardar {
+    padding: 12px;
+    width: 100%;
+    background: black;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-checkout {
+    background: crimson;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
+.btn-checkout:hover {
+    background: darkred;
+    transform: scale(1.05);
+}
+
+.reservas-bg {
+    min-height: 100vh;
+    padding: 40px;
+}
+
+.input-buscar {
+    padding: 10px 15px;
+    width: 300px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin-bottom: 30px;
+}
+
+.reservas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.reserva-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+
+.reserva-card:hover {
+    transform: translateY(-5px);
+}

@@ -1,0 +1,605 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-bg">
+    <div class="dashboard-overlay"></div>
+    <div class="dashboard-container">
+        
+        <!-- Header del Hotel con animación -->
+        <div class="hotel-header animate-fade-down">
+            <div class="hotel-info">
+                {% if hotel.logo %}
+                <img src="{{ hotel.logo.url }}" alt="{{ hotel.nombre }}" class="hotel-logo animate-rotate-in">
+                {% else %}
+                <div class="hotel-icon animate-rotate-in">
+                    <i class="bi bi-building"></i>
+                </div>
+                {% endif %}
+                <div class="animate-fade-right">
+                    <h2>{{ hotel.nombre }}</h2>
+                    <p class="hotel-address"><i class="bi bi-geo-alt-fill"></i> {{ hotel.direccion }}</p>
+                </div>
+            </div>
+            <div class="date-info animate-fade-left">
+                <div class="date-badge animate-pulse-slow">
+                    <i class="bi bi-calendar3"></i> {% now "d M, Y" %}
+                </div>
+                <div class="time-badge animate-pulse-slow">
+                    <i class="bi bi-clock"></i> {% now "H:i" %}
+                </div>
+                <span class="recep-badge animate-float">
+                    <i class="bi bi-person-badge"></i> Recepción
+                </span>
+            </div>
+        </div>
+
+        <!-- Mensaje de Bienvenida con animación -->
+        <div class="welcome-section animate-fade-up">
+            <h1 class="welcome-title animate-gradient-text">Bienvenido, Recepcionista {{ hotel.nombre }}</h1>
+            <p class="welcome-subtitle animate-fade-in">Resumen de operaciones del día</p>
+        </div>
+
+        <!-- Estadísticas de Habitaciones con animaciones -->
+        <div class="rooms-stats">
+            <div class="stats-grid">
+                <!-- Total Habitaciones -->
+                <div class="stat-card total animate-scale-in" style="animation-delay: 0.1s;">
+                    <div class="stat-icon animate-rotate-slow">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Total Habitaciones</span>
+                        <span class="stat-value animate-count">{{ total_habitaciones }}</span>
+                    </div>
+                    <div class="stat-shine"></div>
+                </div>
+
+                <!-- Libres -->
+                <div class="stat-card libre animate-scale-in" style="animation-delay: 0.2s;">
+                    <div class="stat-icon animate-rotate-slow">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Libres</span>
+                        <span class="stat-value animate-count">{{ libres }}</span>
+                    </div>
+                    <div class="stat-shine"></div>
+                </div>
+
+                <!-- Ocupadas -->
+                <div class="stat-card ocupada animate-scale-in" style="animation-delay: 0.3s;">
+                    <div class="stat-icon animate-rotate-slow">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Ocupadas</span>
+                        <span class="stat-value animate-count">{{ ocupadas }}</span>
+                    </div>
+                    <div class="stat-shine"></div>
+                </div>
+
+                <!-- Mantenimiento -->
+                <div class="stat-card mantenimiento animate-scale-in" style="animation-delay: 0.4s;">
+                    <div class="stat-icon animate-rotate-slow">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Mantenimiento</span>
+                        <span class="stat-value animate-count">{{ mantenimiento }}</span>
+                    </div>
+                    <div class="stat-shine"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    @keyframes rotateIn {
+        from {
+            opacity: 0;
+            transform: rotate(-180deg) scale(0.3);
+        }
+        to {
+            opacity: 1;
+            transform: rotate(0) scale(1);
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+    
+    @keyframes rotateSlow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes countUp {
+        from { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        to { transform: scale(1); }
+    }
+    
+    @keyframes gradientFlow {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes shine {
+        0% { left: -100%; }
+        20% { left: 100%; }
+        100% { left: 100%; }
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 1s ease forwards;
+    }
+    
+    .animate-fade-down {
+        animation: fadeInDown 0.8s ease forwards;
+    }
+    
+    .animate-fade-up {
+        animation: fadeInUp 0.8s ease forwards;
+    }
+    
+    .animate-fade-left {
+        animation: fadeInLeft 0.8s ease forwards;
+    }
+    
+    .animate-fade-right {
+        animation: fadeInRight 0.8s ease forwards;
+    }
+    
+    .animate-scale-in {
+        opacity: 0;
+        animation: scaleIn 0.6s ease forwards;
+    }
+    
+    .animate-rotate-in {
+        opacity: 0;
+        animation: rotateIn 0.8s ease forwards;
+    }
+    
+    .animate-float {
+        animation: float 3s ease infinite;
+    }
+    
+    .animate-pulse-slow {
+        animation: pulse 2s ease infinite;
+    }
+    
+    .animate-rotate-slow {
+        animation: rotateSlow 20s linear infinite;
+    }
+    
+    .animate-count {
+        animation: countUp 0.5s ease forwards;
+    }
+    
+    .animate-gradient-text {
+        background: linear-gradient(90deg, #ffffff, #c49b3f, #e4b95b, #ffffff);
+        background-size: 300% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradientFlow 4s ease infinite;
+    }
+    
+    .dashboard-bg {
+        min-height: calc(100vh - 80px);
+        background: url('{% static "img/hotell12.jpg" %}') center/cover fixed;
+        position: relative;
+        padding: 30px 20px;
+    }
+    
+    .dashboard-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.75) 100%);
+        backdrop-filter: blur(2px);
+        pointer-events: none;
+    }
+    
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Header del Hotel */
+    .hotel-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 24px 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(196, 155, 63, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .hotel-header:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 25px 50px rgba(196, 155, 63, 0.2);
+        border-color: rgba(196, 155, 63, 0.4);
+    }
+    
+    .hotel-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .hotel-logo {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        object-fit: cover;
+        border: 2px solid #c49b3f;
+        transition: all 0.3s ease;
+    }
+    
+    .hotel-logo:hover {
+        transform: scale(1.05) rotate(5deg);
+        border-color: #e4b95b;
+    }
+    
+    .hotel-icon {
+        width: 64px;
+        height: 64px;
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .hotel-icon:hover {
+        transform: rotate(10deg) scale(1.1);
+    }
+    
+    .hotel-info h2 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 700;
+        color: #1e293b;
+        transition: color 0.3s ease;
+    }
+    
+    .hotel-info:hover h2 {
+        color: #c49b3f;
+    }
+    
+    .hotel-address {
+        margin: 6px 0 0;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 14px;
+        transition: color 0.3s ease;
+    }
+    
+    .hotel-address i {
+        color: #c49b3f;
+    }
+    
+    .date-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .date-badge, .time-badge {
+        background: #f8fafc;
+        padding: 8px 16px;
+        border-radius: 40px;
+        color: #334155;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    
+    .date-badge:hover, .time-badge:hover {
+        background: #c49b3f;
+        color: white;
+        transform: scale(1.05);
+    }
+    
+    .date-badge:hover i, .time-badge:hover i {
+        color: white;
+    }
+    
+    .date-badge i, .time-badge i {
+        color: #c49b3f;
+        transition: color 0.3s ease;
+    }
+    
+    .recep-badge {
+        background: #c49b3f;
+        color: white;
+        padding: 8px 20px;
+        border-radius: 40px;
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 10px rgba(196, 155, 63, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .recep-badge:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 20px rgba(196, 155, 63, 0.4);
+    }
+    
+    /* Welcome Section */
+    .welcome-section {
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    
+    .welcome-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: white;
+        margin: 0 0 10px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+    }
+    
+    .welcome-title:hover {
+        transform: scale(1.02);
+    }
+    
+    .welcome-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 18px;
+        margin: 0;
+        transition: color 0.3s ease;
+    }
+    
+    .welcome-subtitle:hover {
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Stats Grid */
+    .rooms-stats {
+        margin-bottom: 40px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+    }
+    
+    .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 28px 24px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(196, 155, 63, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        border-color: rgba(196, 155, 63, 0.3);
+    }
+    
+    .stat-card:hover::before {
+        left: 100%;
+    }
+    
+    .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card:hover .stat-icon {
+        transform: rotate(10deg) scale(1.1);
+    }
+    
+    .total .stat-icon {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        color: white;
+    }
+    .libre .stat-icon {
+        background: linear-gradient(135deg, #16a34a, #15803d);
+        color: white;
+    }
+    .ocupada .stat-icon {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+        color: white;
+    }
+    .mantenimiento .stat-icon {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+    }
+    
+    .stat-content {
+        flex: 1;
+    }
+    
+    .stat-label {
+        display: block;
+        color: #64748b;
+        font-size: 15px;
+        font-weight: 500;
+        margin-bottom: 8px;
+        letter-spacing: 0.3px;
+        transition: color 0.3s ease;
+    }
+    
+    .stat-card:hover .stat-label {
+        color: #c49b3f;
+    }
+    
+    .stat-value {
+        display: block;
+        font-size: 48px;
+        font-weight: 800;
+        color: #1e293b;
+        line-height: 1;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover .stat-value {
+        color: #c49b3f;
+        transform: scale(1.05);
+    }
+    
+    .stat-shine {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        animation: shine 3s infinite;
+        pointer-events: none;
+    }
+    
+    /* Responsive */
+    @media (max-width: 900px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .hotel-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+        }
+        .hotel-info {
+            flex-direction: column;
+        }
+        .date-info {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 600px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        .welcome-title {
+            font-size: 24px;
+        }
+        .stat-value {
+            font-size: 36px;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Cambiar Contraseña - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="cambiar-pass-wrapper">
+    <div class="cambiar-pass-container">
+        <!-- HEADER -->
+        <div class="cambiar-pass-header">
+            <a href="{% url 'perfil_hotel' %}" class="btn-volver-cambiar">
+                <i class="bi bi-arrow-left"></i> Volver al Perfil
+            </a>
+            <h1>
+                <i class="bi bi-shield-lock"></i>
+                Cambiar Contraseña
+            </h1>
+            <p class="text-muted">Para {{ user.username }} - hotell12</p>
+        </div>
+
+        <!-- FORMULARIO DE CAMBIO DE CONTRASEÑA -->
+        <div class="cambiar-pass-card">
+            <form method="post" class="cambiar-pass-form">
+                {% csrf_token %}
+                
+                <!-- CONTRASEÑA ACTUAL -->
+                <div class="form-group">
+                    <label for="id_old_password">
+                        <i class="bi bi-lock"></i>
+                        Contraseña actual
+                    </label>
+                    <input type="password" name="old_password" id="id_old_password" class="form-control" required>
+                    {% if form.old_password.errors %}
+                    <div class="error-message">
+                        {{ form.old_password.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- NUEVA CONTRASEÑA -->
+                <div class="form-group">
+                    <label for="id_new_password1">
+                        <i class="bi bi-key"></i>
+                        Nueva contraseña
+                    </label>
+                    <input type="password" name="new_password1" id="id_new_password1" class="form-control" required>
+                    {% if form.new_password1.errors %}
+                    <div class="error-message">
+                        {{ form.new_password1.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- CONFIRMAR NUEVA CONTRASEÑA -->
+                <div class="form-group">
+                    <label for="id_new_password2">
+                        <i class="bi bi-key-fill"></i>
+                        Confirmar nueva contraseña
+                    </label>
+                    <input type="password" name="new_password2" id="id_new_password2" class="form-control" required>
+                    {% if form.new_password2.errors %}
+                    <div class="error-message">
+                        {{ form.new_password2.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- REQUISITOS DE CONTRASEÑA -->
+                <div class="password-requirements">
+                    <h4>Requisitos de seguridad:</h4>
+                    <ul>
+                        <li><i class="bi bi-check-circle"></i> Mínimo 8 caracteres</li>
+                        <li><i class="bi bi-check-circle"></i> No puede ser similar a tu información personal</li>
+                        <li><i class="bi bi-check-circle"></i> No puede ser una contraseña común</li>
+                        <li><i class="bi bi-check-circle"></i> No puede ser completamente numérica</li>
+                    </ul>
+                </div>
+
+                <!-- BOTONES DE ACCIÓN -->
+                <div class="form-actions">
+                    <a href="{% url 'perfil_hotel' %}" class="btn-cancelar-cambiar">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn-guardar-cambiar">
+                        <i class="bi bi-check-circle"></i> Cambiar Contraseña
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- CONSEJOS DE SEGURIDAD -->
+        <div class="security-tips">
+            <h3><i class="bi bi-shield-check"></i> Consejos de seguridad</h3>
+            <div class="tips-grid">
+                <div class="tip-item">
+                    <i class="bi bi-emoji-sunglasses"></i>
+                    <span>Usa una combinación de letras, números y símbolos</span>
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-calendar-x"></i>
+                    <span>No uses fechas importantes o nombres</span>
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>Cambia tu contraseña regularmente</span>
+                </div>
+                <div class="tip-item">
+                    <i class="bi bi-shield-lock"></i>
+                    <span>No compartas tu contraseña con nadie</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .cambiar-pass-wrapper {
+        padding: 40px 20px;
+        min-height: calc(100vh - 80px);
+        background: #f8fafc;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .cambiar-pass-container {
+        max-width: 600px;
+        width: 100%;
+    }
+
+    /* HEADER */
+    .cambiar-pass-header {
+        margin-bottom: 30px;
+    }
+
+    .btn-volver-cambiar {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #6c757d;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+    }
+
+    .btn-volver-cambiar:hover {
+            color: #c49b3f;
+        transform: translateX(-5px);
+    }
+
+    .cambiar-pass-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #0a141e;
+        margin: 0 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .cambiar-pass-header h1 i {
+        color: #c49b3f;
+    }
+
+    .cambiar-pass-header p {
+        color: #6c757d;
+        font-size: 16px;
+        margin: 0;
+    }
+
+    /* CARD PRINCIPAL */
+    .cambiar-pass-card {
+        background: white;
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        border: 1px solid rgba(196, 155, 63, 0.2);
+        margin-bottom: 30px;
+    }
+
+    /* FORMULARIO */
+    .cambiar-pass-form {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #0a141e;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-group label i {
+        color: #c49b3f;
+    }
+
+    .form-control {
+        padding: 14px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.3s;
+        background: #f8fafc;
+    }
+
+    .form-control:focus {
+        border-color: #c49b3f;
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(196, 155, 63, 0.15);
+        background: white;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 13px;
+        margin-top: 5px;
+        padding: 8px 12px;
+        background: rgba(220, 53, 69, 0.1);
+        border-radius: 8px;
+    }
+
+    /* REQUISITOS DE CONTRASEÑA */
+    .password-requirements {
+        background: #f8f9fa;
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid rgba(196, 155, 63, 0.1);
+    }
+
+    .password-requirements h4 {
+        color: #0a141e;
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0 0 12px;
+    }
+
+    .password-requirements ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .password-requirements li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #6c757d;
+        font-size: 13px;
+        margin-bottom: 8px;
+    }
+
+    .password-requirements li i {
+        color: #28a745;
+        font-size: 14px;
+    }
+
+    /* BOTONES */
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .btn-cancelar-cambiar, .btn-guardar-cambiar {
+        flex: 1;
+        padding: 14px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-decoration: none;
+        border: none;
+    }
+
+    .btn-cancelar-cambiar {
+        background: #f8f9fa;
+        color: #6c757d;
+        border: 2px solid transparent;
+    }
+
+    .btn-cancelar-cambiar:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+
+    .btn-guardar-cambiar {
+        background: #c49b3f;
+        color: #0a141e;
+        border: 2px solid transparent;
+    }
+
+    .btn-guardar-cambiar:hover {
+        background: #e4b95b;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(196, 155, 63, 0.4);
+    }
+
+    /* CONSEJOS DE SEGURIDAD */
+    .security-tips {
+        background: linear-gradient(135deg, #0a141e 0%, #1a2732 100%);
+        border-radius: 24px;
+        padding: 30px;
+        color: white;
+    }
+
+    .security-tips h3 {
+        font-size: 18px;
+        margin: 0 0 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .security-tips h3 i {
+        color: #c49b3f;
+    }
+
+    .tips-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .tip-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 13px;
+    }
+
+    .tip-item i {
+        color: #c49b3f;
+        font-size: 18px;
+        width: 24px;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+        .cambiar-pass-card {
+            padding: 25px;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .tips-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .cambiar-pass-header h1 {
+            font-size: 26px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .cambiar-pass-wrapper {
+            padding: 20px 15px;
+        }
+
+        .cambiar-pass-card {
+            padding: 20px;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mostrar requisitos de contraseña mientras escribe
+        const newPassword = document.getElementById('id_new_password1');
+        const requirements = document.querySelectorAll('.password-requirements li');
+        
+        if (newPassword) {
+            newPassword.addEventListener('input', function() {
+                const value = this.value;
+                
+                // Requisito 1: mínimo 8 caracteres
+                if (requirements[0]) {
+                    if (value.length >= 8) {
+                        requirements[0].style.color = '#28a745';
+                        requirements[0].querySelector('i').style.color = '#28a745';
+                    } else {
+                        requirements[0].style.color = '#6c757d';
+                        requirements[0].querySelector('i').style.color = '#6c757d';
+                    }
+                }
+                
+                // Aquí puedes agregar más validaciones en tiempo real si quieres
+            });
+        }
+    });
+</script>
+{% endblock %}

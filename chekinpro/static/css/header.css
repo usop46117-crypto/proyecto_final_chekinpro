@@ -1,0 +1,78 @@
+.main-header{
+    background:#0f172a;
+    padding:14px 0;
+    box-shadow:0 3px 10px rgba(0,0,0,.15);
+}
+
+.header-container{
+    width:92%;
+    margin:auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.logo a{
+    color:white;
+    font-size:24px;
+    font-weight:bold;
+    text-decoration:none;
+}
+
+.logo a{
+    color:white !important;
+}
+
+.logo a:hover{
+    opacity:.8;
+}
+
+.nav-menu{
+    display:flex;
+    align-items:center;
+    gap:22px;
+}
+
+.nav-menu a{
+    color:white;
+    text-decoration:none;
+    font-weight:500;
+    transition:.25s;
+}
+
+.nav-menu a:hover{
+    color:#38bdf8;
+}
+
+/* usuario */
+.user-box{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.user-circle{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    background:#38bdf8;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+}
+
+/* boton registro */
+.btn-register{
+    background:#38bdf8;
+    padding:8px 14px;
+    border-radius:8px;
+}
+
+/* logout */
+.logout{
+    background:#ef4444;
+    padding:6px 12px;
+    border-radius:7px;
+}

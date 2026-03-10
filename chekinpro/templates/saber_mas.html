@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="saber-mas-bg">
+    <div class="saber-mas-container">
+        <h1 class="text-center mb-5">Chekin<span class="pro">Pro</span></h1>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <i class="bi bi-building"></i>
+                    <h3>Gestión de Hoteles</h3>
+                    <p>Administra múltiples hoteles desde una sola plataforma. Control total de habitaciones, reservas y personal.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <i class="bi bi-people"></i>
+                    <h3>Perfiles de Usuario</h3>
+                    <p>Administradores y recepcionistas con diferentes niveles de acceso. Cada rol tiene sus propias funciones.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <i class="bi bi-calendar-check"></i>
+                    <h3>Reservas en Tiempo Real</h3>
+                    <p>Gestiona reservas, check-ins y check-outs de manera eficiente. Historial completo de huéspedes.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <i class="bi bi-door-open"></i>
+                    <h3>Control de Habitaciones</h3>
+                    <p>Monitorea el estado de cada habitación: libre, ocupada o en mantenimiento. Cambios en tiempo real.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <i class="bi bi-bell"></i>
+                    <h3>Notificaciones</h3>
+                    <p>Los administradores reciben notificaciones instantáneas de cada acción realizada por los recepcionistas.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="feature-card">
+                    <i class="bi bi-shield"></i>
+                    <h3>Seguro y Confiable</h3>
+                    <p>Autenticación segura, recuperación de contraseña y datos protegidos. Tu información está segura.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'login' %}" class="btn-login">Iniciar Sesión</a>
+            <a href="{% url 'registro' %}" class="btn-registro ms-3">Registrarse</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .saber-mas-bg {
+        min-height: calc(100vh - 160px);
+        background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('{% static "img/hotel2.jpg" %}') center/cover fixed;
+        padding: 60px 20px;
+    }
+    .saber-mas-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        color: white;
+    }
+    h1 {
+        font-size: 48px;
+        font-weight: 700;
+    }
+    .pro {
+        color: #c49b3f;
+    }
+    .feature-card {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        height: 100%;
+        transition: 0.3s;
+    }
+    .feature-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255,255,255,0.15);
+    }
+    .feature-card i {
+        font-size: 48px;
+        color: #c49b3f;
+        margin-bottom: 20px;
+    }
+    .feature-card h3 {
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    .btn-login, .btn-registro {
+        display: inline-block;
+        padding: 12px 30px;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+    .btn-login {
+        background: #c49b3f;
+        color: #0a141e;
+    }
+    .btn-login:hover {
+        background: #e4b95b;
+        transform: translateY(-2px);
+    }
+    .btn-registro {
+        background: transparent;
+        border: 2px solid #c49b3f;
+        color: white;
+    }
+    .btn-registro:hover {
+        background: #c49b3f;
+        color: #0a141e;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,75 @@
+.reset-bg {
+  background: url("../img/hotel10.jpg") no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.reset-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px;
+  width: 500px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  text-align: center;
+}
+
+.reset-card h2 {
+  margin-bottom: 25px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f4037
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 15px;
+}
+
+.alert {
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.alert.success {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.alert.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.btn-primary {
+  background: #1f4037;
+  border: none;
+  color: #fff;
+  padding: 12px;
+  width: 100%;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.btn-primary:hover {
+  background: #16352f;
+}
+
+.btn-link {
+  text-decoration: none;
+  font-weight: bold;
+  color: #1f4037;
+}

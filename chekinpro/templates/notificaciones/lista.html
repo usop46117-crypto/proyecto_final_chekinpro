@@ -1,0 +1,572 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="notificaciones-bg">
+    <div class="notificaciones-overlay"></div>
+    <div class="notificaciones-container">
+        
+        <!-- Header con título y botones -->
+        <div class="page-header animate-fade-down">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <h1 class="page-title">
+                    <i class="bi bi-bell-fill"></i> 
+                    CENTRO DE NOTIFICACIONES
+                    {% if no_leidas > 0 %}
+                    <span class="badge-nuevas">{{ no_leidas }} nueva{% if no_leidas > 1 %}s{% endif %}</span>
+                    {% endif %}
+                </h1>
+                <div class="d-flex gap-2">
+                    {% if no_leidas > 0 %}
+                    <a href="{% url 'notificaciones:marcar_todas_leidas' %}?hotel={{ hotel.id }}" class="btn-marcar-todas">
+                        <i class="bi bi-check2-all"></i> Marcar todas
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'panel' %}?hotel={{ hotel.id }}" class="btn-volver">
+                        <i class="bi bi-arrow-left"></i> Volver al Panel
+                    </a>
+                </div>
+            </div>
+            <p class="page-subtitle">Historial de actividades y eventos del hotel</p>
+        </div>
+
+        <!-- Contenedor de notificaciones -->
+        <div class="notificaciones-card animate-fade-up" style="animation-delay: 0.1s;">
+            <div class="card-header">
+                <div class="header-left">
+                    <i class="bi bi-clock-history"></i>
+                    <h3>Registro de Actividades</h3>
+                </div>
+                <span class="total-badge">{{ notificaciones|length }} notificaciones</span>
+            </div>
+            
+            <div class="card-body">
+                {% if notificaciones %}
+                    <div class="notificaciones-lista">
+                        {% for notif in notificaciones %}
+                        <div class="notificacion-item {% if not notif.leida %}no-leida{% endif %}">
+                            <div class="notificacion-icono">
+                                {% if notif.tipo == 'reserva' %}
+                                <i class="bi bi-calendar-plus"></i>
+                                {% elif notif.tipo == 'checkout' %}
+                                <i class="bi bi-box-arrow-right"></i>
+                                {% elif notif.tipo == 'exito' %}
+                                <i class="bi bi-check-circle"></i>
+                                {% elif notif.tipo == 'advertencia' %}
+                                <i class="bi bi-exclamation-triangle"></i>
+                                {% elif notif.tipo == 'error' %}
+                                <i class="bi bi-x-circle"></i>
+                                {% else %}
+                                <i class="bi bi-info-circle"></i>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="notificacion-contenido">
+                                <div class="notificacion-header">
+                                    <h4>{{ notif.mensaje|truncatechars:80 }}</h4>
+                                    {% if not notif.leida %}
+                                    <span class="badge-nueva">NUEVA</span>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="notificacion-metadata">
+                                    <span class="metadata-item">
+                                        <i class="bi bi-building"></i> {{ notif.hotel.nombre }}
+                                    </span>
+                                    <span class="metadata-item">
+                                        <i class="bi bi-clock"></i> {{ notif.fecha|date:"d M Y H:i" }}
+                                    </span>
+                                    <span class="metadata-item">
+                                        <i class="bi bi-tag"></i> 
+                                        <span class="tipo-badge tipo-{{ notif.tipo }}">
+                                            {{ notif.get_tipo_display|default:notif.tipo }}
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="notificacion-acciones">
+                                {% if not notif.leida %}
+                                <a href="{% url 'notificaciones:marcar_leida' notif.id %}?hotel={{ hotel.id }}" class="btn-marcar" title="Marcar como leída">
+                                    <i class="bi bi-check-lg"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-bell-slash"></i>
+                        <h3>No hay notificaciones</h3>
+                        <p>Cuando los recepcionistas realicen acciones como crear reservas, hacer checkout o gestionar habitaciones, aparecerán aquí.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* ANIMACIONES */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    .animate-fade-down {
+        animation: fadeInDown 0.8s ease forwards;
+    }
+    
+    .animate-fade-up {
+        opacity: 0;
+        animation: fadeInUp 0.8s ease forwards;
+    }
+    
+    .animate-scale-in {
+        opacity: 0;
+        animation: scaleIn 0.6s ease forwards;
+    }
+    
+    /* FONDO */
+    .notificaciones-bg {
+        min-height: calc(100vh - 80px);
+        background: url('{% static "img/hotell13.png" %}') center/cover fixed;
+        position: relative;
+        padding: 30px 20px;
+    }
+    
+    .notificaciones-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(10, 20, 30, 0.85) 0%, rgba(10, 20, 30, 0.75) 100%);
+        backdrop-filter: blur(3px);
+        pointer-events: none;
+    }
+    
+    .notificaciones-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* PAGE HEADER */
+    .page-header {
+        margin-bottom: 30px;
+    }
+    
+    .page-title {
+        font-size: 36px;
+        font-weight: 800;
+        color: white;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+    
+    .page-title i {
+        color: #c49b3f;
+        font-size: 40px;
+    }
+    
+    .badge-nuevas {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
+        padding: 8px 18px;
+        border-radius: 40px;
+        font-size: 16px;
+        font-weight: 600;
+        box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .page-subtitle {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 18px;
+        margin: 10px 0 0;
+    }
+    
+    /* BOTONES */
+    .btn-marcar-todas {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: none;
+        border-radius: 50px;
+        color: white;
+        font-weight: 600;
+        font-size: 15px;
+        text-decoration: none;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-marcar-todas:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+    }
+    
+    .btn-volver {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 50px;
+        color: white;
+        font-weight: 600;
+        font-size: 15px;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    
+    .btn-volver:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(-3px);
+    }
+    
+    /* CARD PRINCIPAL */
+    .notificaciones-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 32px;
+        overflow: hidden;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #1e293b, #0f172a);
+        padding: 25px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #c49b3f;
+    }
+    
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .header-left i {
+        font-size: 28px;
+        color: #c49b3f;
+    }
+    
+    .card-header h3 {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 700;
+        color: white;
+    }
+    
+    .total-badge {
+        background: rgba(196, 155, 63, 0.2);
+        color: #c49b3f;
+        padding: 8px 20px;
+        border-radius: 40px;
+        font-size: 15px;
+        font-weight: 600;
+        border: 1px solid rgba(196, 155, 63, 0.3);
+    }
+    
+    .card-body {
+        padding: 25px;
+    }
+    
+    /* LISTA DE NOTIFICACIONES */
+    .notificaciones-lista {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .notificacion-item {
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 20px;
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .notificacion-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        border-color: #c49b3f;
+    }
+    
+    .notificacion-item.no-leida {
+        background: linear-gradient(to right, rgba(196, 155, 63, 0.05), white);
+        border-left: 4px solid #c49b3f;
+    }
+    
+    .notificacion-icono {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #c49b3f, #e4b95b);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0a141e;
+        font-size: 24px;
+        flex-shrink: 0;
+        box-shadow: 0 5px 15px rgba(196, 155, 63, 0.2);
+    }
+    
+    .notificacion-contenido {
+        flex: 1;
+    }
+    
+    .notificacion-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .notificacion-header h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e293b;
+        line-height: 1.4;
+    }
+    
+    .badge-nueva {
+        background: #ef4444;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+    
+    .notificacion-metadata {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .metadata-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #64748b;
+        font-size: 13px;
+    }
+    
+    .metadata-item i {
+        color: #c49b3f;
+    }
+    
+    .tipo-badge {
+        padding: 4px 12px;
+        border-radius: 30px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .tipo-badge.tipo-reserva {
+        background: rgba(59, 130, 246, 0.15);
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .tipo-badge.tipo-checkout {
+        background: rgba(16, 185, 129, 0.15);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .tipo-badge.tipo-exito {
+        background: rgba(16, 185, 129, 0.15);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    
+    .tipo-badge.tipo-advertencia {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    .tipo-badge.tipo-error {
+        background: rgba(239, 68, 68, 0.15);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    
+    .tipo-badge.tipo-info {
+        background: rgba(59, 130, 246, 0.15);
+        color: #2563eb;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .notificacion-acciones {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .btn-marcar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .btn-marcar:hover {
+        background: #059669;
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    /* EMPTY STATE */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .empty-state i {
+        font-size: 80px;
+        color: rgba(196, 155, 63, 0.3);
+        margin-bottom: 20px;
+    }
+    
+    .empty-state h3 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 10px;
+    }
+    
+    .empty-state p {
+        color: #64748b;
+        font-size: 16px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+        .page-title {
+            font-size: 28px;
+        }
+        
+        .page-header .d-flex {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .btn-marcar-todas, .btn-volver {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .notificacion-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .notificacion-metadata {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .notificacion-acciones {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
+    
+    @media (max-width: 600px) {
+        .page-title {
+            font-size: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .badge-nuevas {
+            font-size: 14px;
+            padding: 5px 12px;
+        }
+        
+        .card-header {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+        
+        .notificacion-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
