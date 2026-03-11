@@ -142,12 +142,12 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Google OAuth2
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''  # Tu Client ID
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''  # Tu Client Secret
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''  # Client ID
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''  #  Client Secret
 
 # Facebook OAuth2
-SOCIAL_AUTH_FACEBOOK_KEY = ''  # Tu App ID
-SOCIAL_AUTH_FACEBOOK_SECRET = ''  # Tu App Secret
+SOCIAL_AUTH_FACEBOOK_KEY = ''  # App ID
+SOCIAL_AUTH_FACEBOOK_SECRET = ''  # App Secret
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'id, name, email'
@@ -160,4 +160,4 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'chekinpro2027@gmail.com'
 EMAIL_HOST_PASSWORD = 'btcjavlutdwjrtev'
 
-SITE_URL = 'http://10.3.141.47:8000' # Cambia por tu IP cuando sea necesario
+SITE_URL = 'http://10.3.141.47:8000' # IP
