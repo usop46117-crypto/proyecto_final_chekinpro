@@ -74,7 +74,11 @@
                                     </div>
                                 </div>
 
+<<<<<<< HEAD
                                 <!-- Formulario con SweetAlert -->
+=======
+                                <!-- MODIFICACIÓN: Línea 132 - Cambio de confirm() nativo por SweetAlert -->
+>>>>>>> main
                                 <form method="POST" id="form-quitar-recepcionista" onsubmit="event.preventDefault(); confirmarQuitarRecepcionista('{{ recepcionista_actual.username }}')">
                                     {% csrf_token %}
                                     <input type="hidden" name="accion" value="quitar">
@@ -161,11 +165,19 @@
     </div>
 </div>
 
+<<<<<<< HEAD
 <!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 // Función para confirmar quitar recepcionista
+=======
+<!-- SweetAlert2 CDN - Agregado para las alertas modernas -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+// Función para confirmar quitar recepcionista con SweetAlert
+>>>>>>> main
 function confirmarQuitarRecepcionista(username) {
     Swal.fire({
         title: '¿Estás seguro?',
@@ -177,15 +189,30 @@ function confirmarQuitarRecepcionista(username) {
         confirmButtonText: 'Sí, quitar',
         cancelButtonText: 'Cancelar',
         background: '#fff',
+<<<<<<< HEAD
         backdrop: `rgba(0,0,0,0.6)`
     }).then((result) => {
         if (result.isConfirmed) {
+=======
+        backdrop: `rgba(0,0,0,0.6)`,
+        customClass: {
+            title: 'swal-title',
+            popup: 'swal-popup'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Si confirma, enviamos el formulario
+>>>>>>> main
             document.getElementById('form-quitar-recepcionista').submit();
         }
     });
 }
 
+<<<<<<< HEAD
 // Función para confirmar asignación
+=======
+// Función para confirmar asignación de recepcionista con SweetAlert
+>>>>>>> main
 function confirmarAsignacionRecepcionista() {
     const select = document.getElementById('select-recepcionista');
     const email = select.value;
@@ -193,9 +220,15 @@ function confirmarAsignacionRecepcionista() {
     
     if (!email) {
         Swal.fire({
+<<<<<<< HEAD
             icon: 'error',
             title: 'Error',
             text: 'Debes seleccionar un recepcionista',
+=======
+            title: 'Error',
+            text: 'Debes seleccionar un recepcionista',
+            icon: 'error',
+>>>>>>> main
             confirmButtonColor: '#c49b3f',
             background: '#fff'
         });
@@ -215,19 +248,31 @@ function confirmarAsignacionRecepcionista() {
         backdrop: `rgba(0,0,0,0.6)`
     }).then((result) => {
         if (result.isConfirmed) {
+<<<<<<< HEAD
+=======
+            // Si confirma, enviamos el formulario
+>>>>>>> main
             document.getElementById('form-asignar-recepcionista').submit();
         }
     });
 }
 
+<<<<<<< HEAD
 // Mostrar mensajes de Django con SweetAlert
+=======
+// Mostrar mensajes de Django con SweetAlert (opcional, mejora la experiencia)
+>>>>>>> main
 {% if messages %}
     {% for message in messages %}
         document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 icon: '{{ message.tags }}' === 'error' ? 'error' : 'success',
                 title: '{{ message.tags }}' === 'error' ? 'Error' : 'Éxito',
+<<<<<<< HEAD
                 text: '{{ message|escapejs }}',
+=======
+                text: '{{ message }}',
+>>>>>>> main
                 confirmButtonColor: '#c49b3f',
                 timer: 3000,
                 timerProgressBar: true,
@@ -685,8 +730,7 @@ function confirmarAsignacionRecepcionista() {
     .text-muted {
         color: #64748b !important;
     }
-
-    /* RESPONSIVE */
+    
     @media (max-width: 768px) {
         .page-title {
             font-size: 2rem;
