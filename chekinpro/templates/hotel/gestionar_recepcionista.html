@@ -36,8 +36,6 @@
             </div>
         </div>
 
-        <!-- BLOQUE ELIMINADO: Ya no hay mensajes feos de Django -->
-
         <div class="row g-4">
             <!-- Columna izquierda - Recepcionista Actual -->
             <div class="col-md-6">
@@ -74,11 +72,6 @@
                                     </div>
                                 </div>
 
-<<<<<<< HEAD
-                                <!-- Formulario con SweetAlert -->
-=======
-                                <!-- MODIFICACIÓN: Línea 132 - Cambio de confirm() nativo por SweetAlert -->
->>>>>>> main
                                 <form method="POST" id="form-quitar-recepcionista" onsubmit="event.preventDefault(); confirmarQuitarRecepcionista('{{ recepcionista_actual.username }}')">
                                     {% csrf_token %}
                                     <input type="hidden" name="accion" value="quitar">
@@ -165,19 +158,10 @@
     </div>
 </div>
 
-<<<<<<< HEAD
 <!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-// Función para confirmar quitar recepcionista
-=======
-<!-- SweetAlert2 CDN - Agregado para las alertas modernas -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<script>
-// Función para confirmar quitar recepcionista con SweetAlert
->>>>>>> main
 function confirmarQuitarRecepcionista(username) {
     Swal.fire({
         title: '¿Estás seguro?',
@@ -189,30 +173,14 @@ function confirmarQuitarRecepcionista(username) {
         confirmButtonText: 'Sí, quitar',
         cancelButtonText: 'Cancelar',
         background: '#fff',
-<<<<<<< HEAD
         backdrop: `rgba(0,0,0,0.6)`
     }).then((result) => {
         if (result.isConfirmed) {
-=======
-        backdrop: `rgba(0,0,0,0.6)`,
-        customClass: {
-            title: 'swal-title',
-            popup: 'swal-popup'
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Si confirma, enviamos el formulario
->>>>>>> main
             document.getElementById('form-quitar-recepcionista').submit();
         }
     });
 }
 
-<<<<<<< HEAD
-// Función para confirmar asignación
-=======
-// Función para confirmar asignación de recepcionista con SweetAlert
->>>>>>> main
 function confirmarAsignacionRecepcionista() {
     const select = document.getElementById('select-recepcionista');
     const email = select.value;
@@ -220,15 +188,9 @@ function confirmarAsignacionRecepcionista() {
     
     if (!email) {
         Swal.fire({
-<<<<<<< HEAD
             icon: 'error',
             title: 'Error',
             text: 'Debes seleccionar un recepcionista',
-=======
-            title: 'Error',
-            text: 'Debes seleccionar un recepcionista',
-            icon: 'error',
->>>>>>> main
             confirmButtonColor: '#c49b3f',
             background: '#fff'
         });
@@ -248,31 +210,18 @@ function confirmarAsignacionRecepcionista() {
         backdrop: `rgba(0,0,0,0.6)`
     }).then((result) => {
         if (result.isConfirmed) {
-<<<<<<< HEAD
-=======
-            // Si confirma, enviamos el formulario
->>>>>>> main
             document.getElementById('form-asignar-recepcionista').submit();
         }
     });
 }
 
-<<<<<<< HEAD
-// Mostrar mensajes de Django con SweetAlert
-=======
-// Mostrar mensajes de Django con SweetAlert (opcional, mejora la experiencia)
->>>>>>> main
 {% if messages %}
     {% for message in messages %}
         document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 icon: '{{ message.tags }}' === 'error' ? 'error' : 'success',
                 title: '{{ message.tags }}' === 'error' ? 'Error' : 'Éxito',
-<<<<<<< HEAD
                 text: '{{ message|escapejs }}',
-=======
-                text: '{{ message }}',
->>>>>>> main
                 confirmButtonColor: '#c49b3f',
                 timer: 3000,
                 timerProgressBar: true,
@@ -312,7 +261,6 @@ function confirmarAsignacionRecepcionista() {
         z-index: 1;
     }
 
-    /* Título */
     .page-title {
         color: white;
         font-size: 2.5rem;
@@ -327,7 +275,6 @@ function confirmarAsignacionRecepcionista() {
         margin-right: 12px;
     }
 
-    /* Botón volver */
     .btn-volver {
         background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(10px);
@@ -350,7 +297,6 @@ function confirmarAsignacionRecepcionista() {
         box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
     }
 
-    /* Tarjeta de información del hotel */
     .hotel-info-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
@@ -401,12 +347,6 @@ function confirmarAsignacionRecepcionista() {
         width: 20px;
     }
 
-    .hotel-info-row span {
-        color: #1e293b;
-        font-size: 1rem;
-    }
-
-    /* Tarjetas elegantes */
     .elegant-card {
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
@@ -430,12 +370,12 @@ function confirmarAsignacionRecepcionista() {
         gap: 12px;
     }
 
-    .card-header-primary i {
+    .card-header-primary i, .card-header-success i {
         font-size: 24px;
         color: white;
     }
 
-    .card-header-primary h4 {
+    .card-header-primary h4, .card-header-success h4 {
         margin: 0;
         color: white;
         font-weight: 600;
@@ -450,23 +390,10 @@ function confirmarAsignacionRecepcionista() {
         gap: 12px;
     }
 
-    .card-header-success i {
-        font-size: 24px;
-        color: white;
-    }
-
-    .card-header-success h4 {
-        margin: 0;
-        color: white;
-        font-weight: 600;
-        font-size: 1.2rem;
-    }
-
     .card-body {
         padding: 30px;
     }
 
-    /* Recepcionista actual */
     .recepcionista-actual {
         display: flex;
         flex-direction: column;
@@ -512,7 +439,6 @@ function confirmarAsignacionRecepcionista() {
         box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
     }
 
-    /* Lista de información */
     .info-list {
         width: 100%;
         background: #f8fafc;
@@ -554,10 +480,7 @@ function confirmarAsignacionRecepcionista() {
         font-weight: 500;
     }
 
-    /* Botones */
-    .btn-quitar {
-        background: linear-gradient(135deg, #ef4444, #dc2626);
-        color: white;
+    .btn-quitar, .btn-asignar, .btn-crear {
         border: none;
         padding: 14px 24px;
         border-radius: 16px;
@@ -570,7 +493,12 @@ function confirmarAsignacionRecepcionista() {
         justify-content: center;
         gap: 10px;
         width: 100%;
-        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-quitar {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
     }
 
     .btn-quitar:hover {
@@ -582,19 +510,6 @@ function confirmarAsignacionRecepcionista() {
     .btn-asignar {
         background: linear-gradient(135deg, #10b981, #059669);
         color: white;
-        border: none;
-        padding: 14px 24px;
-        border-radius: 16px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        width: 100%;
-        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
     }
 
     .btn-asignar:hover {
@@ -606,30 +521,13 @@ function confirmarAsignacionRecepcionista() {
     .btn-crear {
         background: linear-gradient(135deg, #3b82f6, #2563eb);
         color: white;
-        border: none;
-        padding: 14px 24px;
-        border-radius: 16px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
         text-decoration: none;
-        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
     }
 
     .btn-crear:hover {
         background: linear-gradient(135deg, #2563eb, #1d4ed8);
         transform: translateY(-3px);
         box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
-    }
-
-    /* Formulario */
-    .asignar-form {
-        margin-bottom: 25px;
     }
 
     .form-group {
@@ -667,11 +565,6 @@ function confirmarAsignacionRecepcionista() {
         box-shadow: 0 0 0 4px rgba(196, 155, 63, 0.15);
     }
 
-    .form-select option {
-        color: #1e293b;
-    }
-
-    /* Divisor */
     .divider {
         text-align: center;
         margin: 25px 0;
@@ -698,7 +591,6 @@ function confirmarAsignacionRecepcionista() {
         z-index: 0;
     }
 
-    /* Estado vacío */
     .empty-state {
         text-align: center;
         padding: 30px 0;
@@ -730,7 +622,7 @@ function confirmarAsignacionRecepcionista() {
     .text-muted {
         color: #64748b !important;
     }
-    
+
     @media (max-width: 768px) {
         .page-title {
             font-size: 2rem;
