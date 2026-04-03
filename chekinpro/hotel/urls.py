@@ -17,5 +17,8 @@ urlpatterns = [
     # Recepcionistas
     path('gestionar-recepcionista/<int:hotel_id>/', views.gestionar_recepcionista, name='gestionar_recepcionista'),
     path('agregar-recepcionista/<int:hotel_id>/', views.agregar_recepcionista, name='agregar_recepcionista'),
+
+    #Perfiles
+    path('perfil/subir-foto/', views.upload_profile_picture, name='upload_profile_picture'),
     
 ]

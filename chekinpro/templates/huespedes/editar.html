@@ -93,6 +93,53 @@
                         </div>
                     </div>
 
+                    <!-- ========== SECCIÓN DE ACOMPAÑANTES ========== -->
+                    <div class="form-section-acompanantes">
+                        <div class="section-header-acompanantes">
+                            <i class="bi bi-people-fill"></i>
+                            <h3>Acompañantes</h3>
+                            <button type="button" class="btn-add-acompanante" onclick="agregarAcompanante()">
+                                <i class="bi bi-plus-circle"></i> Agregar acompañante
+                            </button>
+                        </div>
+
+                        <div id="acompanantes-container">
+                            {% if acompanantes %}
+                                {% for acomp in acompanantes %}
+                                <div class="acompanante-card" data-id="{{ acomp.id }}">
+                                    <div class="acompanante-header">
+                                        <h6>
+                                            <i class="bi bi-person-badge"></i> 
+                                            Acompañante {{ forloop.counter }}
+                                        </h6>
+                                        <button type="button" class="btn-remove" onclick="eliminarAcompanante(this, {{ acomp.id }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <input type="text" name="acompanante_nombre_{{ forloop.counter0 }}" class="form-control" placeholder="Nombre completo" value="{{ acomp.nombre }}" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <input type="text" name="acompanante_documento_{{ forloop.counter0 }}" class="form-control" placeholder="Documento (opcional)" value="{{ acomp.documento }}">
+                                        </div>
+                                    </div>
+                                    {% if acomp.id %}
+                                    <input type="hidden" name="acompanante_id_{{ forloop.counter0 }}" value="{{ acomp.id }}">
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <div class="empty-acompanantes" id="empty-acompanantes-message" style="{% if acompanantes %}display: none;{% endif %}">
+                            <i class="bi bi-people"></i>
+                            <p>No hay acompañantes agregados</p>
+                            <small>Haz clic en "Agregar acompañante" para añadir</small>
+                        </div>
+                    </div>
+                    <!-- ========== FIN ACOMPAÑANTES ========== -->
+
                     <div class="info-box">
                         <div class="info-box-icon">
                             <i class="bi bi-info-circle"></i>
@@ -122,6 +169,66 @@
     document.getElementById('tiene_vehiculo').addEventListener('change', function() {
         document.getElementById('campo_placa').style.display = this.checked ? 'block' : 'none';
     });
+
+    // Contador para nuevos acompañantes (se incrementa con cada nuevo)
+    let contadorAcompanantes = {{ acompanantes|length|default:0 }};
+
+    function agregarAcompanante() {
+        const container = document.getElementById('acompanantes-container');
+        const emptyMessage = document.getElementById('empty-acompanantes-message');
+
+        if (emptyMessage) {
+            emptyMessage.style.display = 'none';
+        }
+
+        const div = document.createElement('div');
+        div.className = 'acompanante-card';
+        div.setAttribute('data-nuevo', 'true');
+        div.innerHTML = `
+            <div class="acompanante-header">
+                <h6>
+                    <i class="bi bi-person-badge"></i> 
+                    Acompañante ${contadorAcompanantes + 1}
+                </h6>
+                <button type="button" class="btn-remove" onclick="eliminarAcompanante(this)">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <input type="text" name="acompanante_nombre_${contadorAcompanantes}" class="form-control" placeholder="Nombre completo" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <input type="text" name="acompanante_documento_${contadorAcompanantes}" class="form-control" placeholder="Documento (opcional)">
+                </div>
+            </div>
+        `;
+
+        container.appendChild(div);
+        contadorAcompanantes++;
+    }
+
+    function eliminarAcompanante(button, id = null) {
+        const card = button.closest('.acompanante-card');
+        // Si el acompañante ya existe en BD (tiene id), añadimos un campo oculto para marcarlo como eliminado
+        if (id) {
+            const inputDeleted = document.createElement('input');
+            inputDeleted.type = 'hidden';
+            inputDeleted.name = 'acompanante_eliminar';
+            inputDeleted.value = id;
+            document.getElementById('editarForm').appendChild(inputDeleted);
+        }
+        card.style.transition = 'opacity 0.3s ease';
+        card.style.opacity = '0';
+        setTimeout(() => {
+            card.remove();
+            const container = document.getElementById('acompanantes-container');
+            const emptyMessage = document.getElementById('empty-acompanantes-message');
+            if (container.children.length === 0 && emptyMessage) {
+                emptyMessage.style.display = 'block';
+            }
+        }, 300);
+    }
 
     // SweetAlert para mensajes
     document.addEventListener('DOMContentLoaded', function() {
@@ -166,7 +273,7 @@
     }
     
     .editar-huesped-container {
-        max-width: 700px;
+        max-width: 900px;  /* Aumentado un poco para mejor visualización */
         margin: 0 auto;
         position: relative;
         z-index: 1;
@@ -384,6 +491,159 @@
         margin-top: 15px;
         animation: fadeIn 0.3s ease;
     }
+    
+    /* ESTILOS PARA ACOMPAÑANTES */
+    .form-section-acompanantes {
+        background: rgba(0, 0, 0, 0.03);
+        border-radius: 24px;
+        padding: 20px;
+        margin: 20px 0;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .section-header-acompanantes {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+        flex-wrap: wrap;
+    }
+
+    .section-header-acompanantes i {
+        font-size: 24px;
+        color: #f59e0b;
+    }
+
+    .section-header-acompanantes h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e293b;
+        flex: 1;
+    }
+
+    .btn-add-acompanante {
+        background: transparent;
+        border: 2px solid #f59e0b;
+        color: #f59e0b;
+        padding: 6px 18px;
+        border-radius: 40px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-add-acompanante:hover {
+        background: #f59e0b;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .acompanante-card {
+        background: rgba(245, 158, 11, 0.05);
+        border-radius: 20px;
+        padding: 18px;
+        margin-bottom: 16px;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .acompanante-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .acompanante-header h6 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: #f59e0b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-remove {
+        background: rgba(220, 38, 38, 0.1);
+        border: 1px solid rgba(220, 38, 38, 0.3);
+        color: #dc2626;
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-remove:hover {
+        background: #dc2626;
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .empty-acompanantes {
+        text-align: center;
+        padding: 30px;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 20px;
+        border: 2px dashed rgba(245, 158, 11, 0.3);
+    }
+
+    .empty-acompanantes i {
+        font-size: 48px;
+        color: rgba(245, 158, 11, 0.3);
+        margin-bottom: 12px;
+    }
+
+    .empty-acompanantes p {
+        font-size: 15px;
+        color: #4b5563;
+        margin: 0 0 5px;
+    }
+
+    .empty-acompanantes small {
+        color: #9ca3af;
+    }
+
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        margin: 0 -8px;
+    }
+
+    .col-md-6 {
+        width: 50%;
+        padding: 0 8px;
+    }
+
+    .mb-3 {
+        margin-bottom: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .col-md-6 {
+            width: 100%;
+        }
+        .section-header-acompanantes {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .btn-add-acompanante {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    /* FIN ESTILOS ACOMPAÑANTES */
     
     .info-box {
         background: rgba(59, 130, 246, 0.1);

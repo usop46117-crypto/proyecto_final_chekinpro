@@ -69,14 +69,12 @@ from django.urls import reverse
 
 @login_required
 def huesped_editar(request, id):
-    # Primero obtener el hotel
     hotel = obtener_hotel(request)
     
-    # Solo recepcionistas pueden editar huéspedes
     if request.user.rol != 'recep':
         messages.error(request, "⛔ Solo recepcionistas pueden editar huéspedes")
         if hotel:
-            return redirect(f'/huespedes/?hotel={hotel.id}')  # 👈 URL DIRECTA
+            return redirect(f'/huespedes/?hotel={hotel.id}')
         return redirect('panel')
     
     if not hotel:
@@ -85,30 +83,76 @@ def huesped_editar(request, id):
 
     huesped = get_object_or_404(Huesped, id=id, hotel=hotel)
 
+    # Procesar el formulario completo (huésped + acompañantes)
     if request.method == 'POST':
-        # Validar que los campos requeridos no estén vacíos
+        # 1. Datos del huésped
         nombre = request.POST.get('nombre', '').strip()
         documento = request.POST.get('documento', '').strip()
         telefono = request.POST.get('telefono', '').strip()
-        
+        correo = request.POST.get('correo', '').strip()
+        tiene_vehiculo = request.POST.get('tiene_vehiculo') == 'on'
+        placa = request.POST.get('placa', '').strip().upper() if tiene_vehiculo else ''
+
         if not nombre or not documento or not telefono:
             messages.error(request, "❌ Los campos nombre, documento y teléfono son obligatorios")
-            return render(request, 'huespedes/editar.html', {'huesped': huesped})
-        
+            # Volver a cargar el formulario con los datos actuales
+            acompanantes = Acompanante.objects.filter(huesped=huesped)
+            return render(request, 'huespedes/editar.html', {'huesped': huesped, 'acompanantes': acompanantes})
+
+        # Actualizar huésped
         huesped.nombre = nombre
         huesped.documento = documento
         huesped.telefono = telefono
-        huesped.correo = request.POST.get('correo', '').strip()
-        huesped.tiene_vehiculo = request.POST.get('tiene_vehiculo') == 'on'
-        huesped.placa = request.POST.get('placa', '').strip().upper() if huesped.tiene_vehiculo else ''
+        huesped.correo = correo
+        huesped.tiene_vehiculo = tiene_vehiculo
+        huesped.placa = placa
         huesped.save()
-        
+
+        # 2. Procesar acompañantes
+        # 2a. Eliminar acompañantes marcados para borrar
+        eliminar_ids = request.POST.getlist('acompanante_eliminar')
+        if eliminar_ids:
+            Acompanante.objects.filter(id__in=eliminar_ids, huesped=huesped).delete()
+
+        # 2b. Actualizar o crear acompañantes
+        i = 0
+        while True:
+            nombre_key = f'acompanante_nombre_{i}'
+            if nombre_key not in request.POST:
+                break
+            nombre_acomp = request.POST.get(nombre_key, '').strip()
+            documento_acomp = request.POST.get(f'acompanante_documento_{i}', '').strip()
+            acomp_id = request.POST.get(f'acompanante_id_{i}')
+
+            if nombre_acomp:  # Solo si tiene nombre
+                if acomp_id:
+                    # Actualizar existente
+                    try:
+                        acomp = Acompanante.objects.get(id=acomp_id, huesped=huesped)
+                        acomp.nombre = nombre_acomp
+                        acomp.documento = documento_acomp
+                        acomp.save()
+                    except Acompanante.DoesNotExist:
+                        pass
+                else:
+                    # Crear nuevo
+                    Acompanante.objects.create(
+                        huesped=huesped,
+                        nombre=nombre_acomp,
+                        documento=documento_acomp
+                    )
+            i += 1
+
         messages.success(request, f'✅ Huésped {huesped.nombre} actualizado correctamente')
-        
-        # 👈 SOLUCIÓN: URL DIRECTA (la que SÍ funciona)
+        # Redirigir a la lista de huéspedes del mismo hotel
         return redirect(f'/huespedes/?hotel={hotel.id}')
 
-    return render(request, 'huespedes/editar.html', {'huesped': huesped})
+    # GET: mostrar formulario con acompañantes existentes
+    acompanantes = Acompanante.objects.filter(huesped=huesped)
+    return render(request, 'huespedes/editar.html', {
+        'huesped': huesped,
+        'acompanantes': acompanantes
+    })
 
 @login_required
 def agregar_acompanante(request, huesped_id):

@@ -9,6 +9,7 @@ urlpatterns = [
     path('panel/', views.panel, name='panel'),
     path('saber-mas/', views.saber_mas, name='saber_mas'),
     path('perfil/', views.mi_perfil, name='mi_perfil'),
+    path('toggle-suspension/', views.toggle_suspension, name='toggle_suspension'),
 
     path('recuperar/', views.recuperar_password, name='recuperar_password'),
     path('reset/<uidb64>/<token>/', views.reset_password_confirm, name='reset_password_confirm'),

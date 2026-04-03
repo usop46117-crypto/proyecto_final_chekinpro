@@ -18,65 +18,63 @@
             <p class="text-muted">Para {{ user.username }} - hotell12</p>
         </div>
 
-        <!-- FORMULARIO DE CAMBIO DE CONTRASEÑA -->
+        <!-- FORMULARIO -->
         <div class="cambiar-pass-card">
-            <form method="post" class="cambiar-pass-form">
+            <form method="post" class="cambiar-pass-form" id="passwordForm">
                 {% csrf_token %}
                 
-                <!-- CONTRASEÑA ACTUAL -->
+                <!-- Contraseña actual -->
                 <div class="form-group">
                     <label for="id_old_password">
                         <i class="bi bi-lock"></i>
                         Contraseña actual
                     </label>
-                    <input type="password" name="old_password" id="id_old_password" class="form-control" required>
+                    <input type="password" name="old_password" id="id_old_password" class="form-control" 
+                           placeholder="Ingresa tu contraseña actual" required>
                     {% if form.old_password.errors %}
-                    <div class="error-message">
-                        {{ form.old_password.errors }}
-                    </div>
+                    <div class="error-message">{{ form.old_password.errors }}</div>
                     {% endif %}
                 </div>
 
-                <!-- NUEVA CONTRASEÑA -->
+                <!-- Nueva contraseña -->
                 <div class="form-group">
                     <label for="id_new_password1">
                         <i class="bi bi-key"></i>
                         Nueva contraseña
                     </label>
-                    <input type="password" name="new_password1" id="id_new_password1" class="form-control" required>
+                    <input type="password" name="new_password1" id="id_new_password1" class="form-control" 
+                           placeholder="Mínimo 8 caracteres" required>
                     {% if form.new_password1.errors %}
-                    <div class="error-message">
-                        {{ form.new_password1.errors }}
-                    </div>
+                    <div class="error-message">{{ form.new_password1.errors }}</div>
                     {% endif %}
                 </div>
 
-                <!-- CONFIRMAR NUEVA CONTRASEÑA -->
+                <!-- Confirmar contraseña -->
                 <div class="form-group">
                     <label for="id_new_password2">
                         <i class="bi bi-key-fill"></i>
                         Confirmar nueva contraseña
                     </label>
-                    <input type="password" name="new_password2" id="id_new_password2" class="form-control" required>
+                    <input type="password" name="new_password2" id="id_new_password2" class="form-control" 
+                           placeholder="Repite la nueva contraseña" required>
+                    <div id="confirmError" class="error-message" style="display:none;"></div>
                     {% if form.new_password2.errors %}
-                    <div class="error-message">
-                        {{ form.new_password2.errors }}
-                    </div>
+                    <div class="error-message">{{ form.new_password2.errors }}</div>
                     {% endif %}
                 </div>
 
-                <!-- REQUISITOS DE CONTRASEÑA -->
+                <!-- REQUISITOS DINÁMICOS -->
                 <div class="password-requirements">
                     <h4>Requisitos de seguridad:</h4>
-                    <ul>
-                        <li><i class="bi bi-check-circle"></i> Mínimo 8 caracteres</li>
-                        <li><i class="bi bi-check-circle"></i> No puede ser similar a tu información personal</li>
-                        <li><i class="bi bi-check-circle"></i> No puede ser una contraseña común</li>
-                        <li><i class="bi bi-check-circle"></i> No puede ser completamente numérica</li>
+                    <ul id="requirementsList">
+                        <li id="reqLength"><i class="bi bi-circle"></i> Mínimo 8 caracteres</li>
+                        <li id="reqNotSimilar"><i class="bi bi-circle"></i> No puede ser similar a tu información personal</li>
+                        <li id="reqNotCommon"><i class="bi bi-circle"></i> No puede ser una contraseña común</li>
+                        <li id="reqNotNumeric"><i class="bi bi-circle"></i> No puede ser completamente numérica</li>
                     </ul>
                 </div>
 
-                <!-- BOTONES DE ACCIÓN -->
+                <!-- BOTONES -->
                 <div class="form-actions">
                     <a href="{% url 'perfil_hotel' %}" class="btn-cancelar-cambiar">
                         <i class="bi bi-x-circle"></i> Cancelar
@@ -88,112 +86,107 @@
             </form>
         </div>
 
-        <!-- CONSEJOS DE SEGURIDAD -->
+        <!-- CONSEJOS -->
         <div class="security-tips">
             <h3><i class="bi bi-shield-check"></i> Consejos de seguridad</h3>
             <div class="tips-grid">
-                <div class="tip-item">
-                    <i class="bi bi-emoji-sunglasses"></i>
-                    <span>Usa una combinación de letras, números y símbolos</span>
-                </div>
-                <div class="tip-item">
-                    <i class="bi bi-calendar-x"></i>
-                    <span>No uses fechas importantes o nombres</span>
-                </div>
-                <div class="tip-item">
-                    <i class="bi bi-arrow-repeat"></i>
-                    <span>Cambia tu contraseña regularmente</span>
-                </div>
-                <div class="tip-item">
-                    <i class="bi bi-shield-lock"></i>
-                    <span>No compartas tu contraseña con nadie</span>
-                </div>
+                <div class="tip-item"><i class="bi bi-emoji-sunglasses"></i><span>Usa letras, números y símbolos</span></div>
+                <div class="tip-item"><i class="bi bi-calendar-x"></i><span>No uses fechas o nombres</span></div>
+                <div class="tip-item"><i class="bi bi-arrow-repeat"></i><span>Cambia tu contraseña regularmente</span></div>
+                <div class="tip-item"><i class="bi bi-shield-lock"></i><span>No la compartas con nadie</span></div>
             </div>
         </div>
     </div>
 </div>
 
 <style>
+    /* Fondo hotel7 */
     .cambiar-pass-wrapper {
         padding: 40px 20px;
         min-height: calc(100vh - 80px);
-        background: #f8fafc;
+        background: url('{% static "img/hotel7.jpg" %}') no-repeat center center fixed;
+        background-size: cover;
+        position: relative;
         display: flex;
         justify-content: center;
         align-items: flex-start;
         font-family: 'Inter', sans-serif;
     }
-
+    .cambiar-pass-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(3px);
+        z-index: 0;
+    }
     .cambiar-pass-container {
         max-width: 600px;
         width: 100%;
+        position: relative;
+        z-index: 1;
     }
-
-    /* HEADER */
+    /* Header */
     .cambiar-pass-header {
         margin-bottom: 30px;
     }
-
     .btn-volver-cambiar {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        color: #6c757d;
+        color: white;
         text-decoration: none;
         font-size: 14px;
         font-weight: 500;
         margin-bottom: 20px;
-        transition: all 0.3s;
+        background: rgba(0,0,0,0.5);
+        padding: 6px 12px;
+        border-radius: 50px;
+        backdrop-filter: blur(5px);
+        transition: 0.3s;
     }
-
     .btn-volver-cambiar:hover {
-            color: #c49b3f;
+        color: #c49b3f;
         transform: translateX(-5px);
+        background: rgba(0,0,0,0.7);
     }
-
     .cambiar-pass-header h1 {
         font-size: 32px;
         font-weight: 700;
-        color: #0a141e;
+        color: white;
         margin: 0 0 10px;
         display: flex;
         align-items: center;
         gap: 10px;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
-
     .cambiar-pass-header h1 i {
         color: #c49b3f;
     }
-
     .cambiar-pass-header p {
-        color: #6c757d;
+        color: rgba(255,255,255,0.9);
         font-size: 16px;
         margin: 0;
     }
-
-    /* CARD PRINCIPAL */
+    /* Tarjeta */
     .cambiar-pass-card {
-        background: white;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(10px);
         border-radius: 24px;
         padding: 40px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-        border: 1px solid rgba(196, 155, 63, 0.2);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        border: 1px solid rgba(196, 155, 63, 0.4);
         margin-bottom: 30px;
     }
-
-    /* FORMULARIO */
-    .cambiar-pass-form {
-        display: flex;
-        flex-direction: column;
-        gap: 25px;
-    }
-
     .form-group {
+        margin-bottom: 20px;
         display: flex;
         flex-direction: column;
         gap: 8px;
     }
-
     .form-group label {
         font-weight: 600;
         color: #0a141e;
@@ -202,57 +195,49 @@
         align-items: center;
         gap: 8px;
     }
-
     .form-group label i {
         color: #c49b3f;
     }
-
     .form-control {
         padding: 14px 16px;
         border: 2px solid #e0e0e0;
         border-radius: 12px;
         font-size: 15px;
-        transition: all 0.3s;
+        transition: 0.3s;
         background: #f8fafc;
     }
-
     .form-control:focus {
         border-color: #c49b3f;
         outline: none;
         box-shadow: 0 0 0 4px rgba(196, 155, 63, 0.15);
         background: white;
     }
-
     .error-message {
         color: #dc3545;
         font-size: 13px;
-        margin-top: 5px;
         padding: 8px 12px;
-        background: rgba(220, 53, 69, 0.1);
+        background: rgba(220,53,69,0.1);
         border-radius: 8px;
     }
-
-    /* REQUISITOS DE CONTRASEÑA */
+    /* Requisitos */
     .password-requirements {
         background: #f8f9fa;
         border-radius: 16px;
         padding: 20px;
-        border: 1px solid rgba(196, 155, 63, 0.1);
+        border: 1px solid rgba(196,155,63,0.2);
+        margin-top: 10px;
     }
-
     .password-requirements h4 {
         color: #0a141e;
         font-size: 15px;
         font-weight: 600;
         margin: 0 0 12px;
     }
-
     .password-requirements ul {
         list-style: none;
         padding: 0;
         margin: 0;
     }
-
     .password-requirements li {
         display: flex;
         align-items: center;
@@ -260,20 +245,20 @@
         color: #6c757d;
         font-size: 13px;
         margin-bottom: 8px;
+        transition: 0.2s;
     }
-
-    .password-requirements li i {
+    .password-requirements li.valid {
         color: #28a745;
-        font-size: 14px;
     }
-
-    /* BOTONES */
+    .password-requirements li.valid i {
+        color: #28a745;
+    }
+    /* Botones */
     .form-actions {
         display: flex;
         gap: 15px;
-        margin-top: 10px;
+        margin-top: 20px;
     }
-
     .btn-cancelar-cambiar, .btn-guardar-cambiar {
         flex: 1;
         padding: 14px 20px;
@@ -281,7 +266,7 @@
         font-weight: 600;
         font-size: 15px;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: 0.3s;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -289,38 +274,32 @@
         text-decoration: none;
         border: none;
     }
-
     .btn-cancelar-cambiar {
         background: #f8f9fa;
         color: #6c757d;
-        border: 2px solid transparent;
     }
-
     .btn-cancelar-cambiar:hover {
         background: #e9ecef;
         transform: translateY(-2px);
     }
-
     .btn-guardar-cambiar {
         background: #c49b3f;
         color: #0a141e;
-        border: 2px solid transparent;
     }
-
     .btn-guardar-cambiar:hover {
         background: #e4b95b;
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(196, 155, 63, 0.4);
+        box-shadow: 0 5px 15px rgba(196,155,63,0.4);
     }
-
-    /* CONSEJOS DE SEGURIDAD */
+    /* Consejos */
     .security-tips {
-        background: linear-gradient(135deg, #0a141e 0%, #1a2732 100%);
+        background: linear-gradient(135deg, rgba(10,20,30,0.95), rgba(26,39,50,0.95));
+        backdrop-filter: blur(5px);
         border-radius: 24px;
         padding: 30px;
         color: white;
+        border: 1px solid rgba(196,155,63,0.3);
     }
-
     .security-tips h3 {
         font-size: 18px;
         margin: 0 0 20px;
@@ -328,85 +307,130 @@
         align-items: center;
         gap: 10px;
     }
-
     .security-tips h3 i {
         color: #c49b3f;
     }
-
     .tips-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2,1fr);
         gap: 20px;
     }
-
     .tip-item {
         display: flex;
         align-items: center;
         gap: 12px;
-        color: rgba(255, 255, 255, 0.9);
         font-size: 13px;
     }
-
     .tip-item i {
         color: #c49b3f;
         font-size: 18px;
-        width: 24px;
     }
-
-    /* RESPONSIVE */
-    @media (max-width: 600px) {
-        .cambiar-pass-card {
-            padding: 25px;
-        }
-
-        .form-actions {
-            flex-direction: column;
-        }
-
-        .tips-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .cambiar-pass-header h1 {
-            font-size: 26px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .cambiar-pass-wrapper {
-            padding: 20px 15px;
-        }
-
-        .cambiar-pass-card {
-            padding: 20px;
-        }
+    @media (max-width:600px) {
+        .cambiar-pass-card { padding: 25px; }
+        .form-actions { flex-direction: column; }
+        .tips-grid { grid-template-columns: 1fr; }
+        .cambiar-pass-header h1 { font-size: 26px; }
     }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Mostrar requisitos de contraseña mientras escribe
-        const newPassword = document.getElementById('id_new_password1');
-        const requirements = document.querySelectorAll('.password-requirements li');
-        
-        if (newPassword) {
-            newPassword.addEventListener('input', function() {
-                const value = this.value;
-                
-                // Requisito 1: mínimo 8 caracteres
-                if (requirements[0]) {
-                    if (value.length >= 8) {
-                        requirements[0].style.color = '#28a745';
-                        requirements[0].querySelector('i').style.color = '#28a745';
-                    } else {
-                        requirements[0].style.color = '#6c757d';
-                        requirements[0].querySelector('i').style.color = '#6c757d';
-                    }
-                }
-                
-                // Aquí puedes agregar más validaciones en tiempo real si quieres
-            });
+        const newPass = document.getElementById('id_new_password1');
+        const confirmPass = document.getElementById('id_new_password2');
+        const confirmErrorDiv = document.getElementById('confirmError');
+
+        // Elementos de requisitos
+        const reqLength = document.getElementById('reqLength');
+        const reqNotSimilar = document.getElementById('reqNotSimilar');
+        const reqNotCommon = document.getElementById('reqNotCommon');
+        const reqNotNumeric = document.getElementById('reqNotNumeric');
+
+        // Lista de contraseñas comunes (ampliable)
+        const commonPasswords = [
+            '12345678', 'password', '123456789', 'qwerty123', 'abc12345', 
+            '11111111', 'admin123', '123123123', 'password123', 'admin'
+        ];
+
+        // Obtener información del usuario para validar similitud
+        const userData = {
+            username: "{{ user.username|default:'' }}".toLowerCase(),
+            email: "{{ user.email|default:'' }}".toLowerCase(),
+            first_name: "{{ user.first_name|default:'' }}".toLowerCase(),
+            last_name: "{{ user.last_name|default:'' }}".toLowerCase()
+        };
+
+        function validatePassword() {
+            const password = newPass.value;
+            let isValidLength = false;
+            let isValidNotSimilar = true;
+            let isValidNotCommon = true;
+            let isValidNotNumeric = true;
+
+            // 1. Mínimo 8 caracteres
+            if (password.length >= 8) {
+                isValidLength = true;
+            }
+
+            // 2. No similar a información personal
+            if (password.length > 0) {
+                const lowerPass = password.toLowerCase();
+                if (userData.username && lowerPass.includes(userData.username)) isValidNotSimilar = false;
+                if (userData.email && lowerPass.includes(userData.email.split('@')[0])) isValidNotSimilar = false;
+                if (userData.first_name && lowerPass.includes(userData.first_name)) isValidNotSimilar = false;
+                if (userData.last_name && lowerPass.includes(userData.last_name)) isValidNotSimilar = false;
+            }
+
+            // 3. No es común
+            if (commonPasswords.includes(password.toLowerCase())) {
+                isValidNotCommon = false;
+            }
+
+            // 4. No es completamente numérica
+            if (/^\d+$/.test(password)) {
+                isValidNotNumeric = false;
+            }
+
+            // Aplicar clases CSS y cambiar íconos
+            updateRequirement(reqLength, isValidLength);
+            updateRequirement(reqNotSimilar, isValidNotSimilar && password.length >= 8);
+            updateRequirement(reqNotCommon, isValidNotCommon && password.length >= 8);
+            updateRequirement(reqNotNumeric, isValidNotNumeric && password.length >= 8);
         }
+
+        function updateRequirement(element, isValid) {
+            if (isValid) {
+                element.classList.add('valid');
+                element.querySelector('i').className = 'bi bi-check-circle-fill';
+            } else {
+                element.classList.remove('valid');
+                element.querySelector('i').className = 'bi bi-circle';
+            }
+        }
+
+        // Validar coincidencia de contraseñas
+        function checkMatch() {
+            if (confirmPass.value.length === 0) {
+                confirmErrorDiv.style.display = 'none';
+                return;
+            }
+            if (newPass.value !== confirmPass.value) {
+                confirmErrorDiv.textContent = 'Las contraseñas no coinciden';
+                confirmErrorDiv.style.display = 'block';
+            } else {
+                confirmErrorDiv.style.display = 'none';
+            }
+        }
+
+        // Eventos
+        newPass.addEventListener('input', function() {
+            validatePassword();
+            checkMatch();
+        });
+        confirmPass.addEventListener('input', checkMatch);
+
+        // Validación inicial
+        validatePassword();
     });
 </script>
 {% endblock %}

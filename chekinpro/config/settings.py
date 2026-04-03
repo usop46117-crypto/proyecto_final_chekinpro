@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'usuarios.middleware.SuspensionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -161,3 +162,7 @@ EMAIL_HOST_USER = 'chekinpro2027@gmail.com'
 EMAIL_HOST_PASSWORD = 'btcjavlutdwjrtev'
 
 SITE_URL = 'http://10.3.141.47:8000' # IP
+
+#foto
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

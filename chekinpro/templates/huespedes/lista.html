@@ -1,73 +1,332 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Huéspedes Activos - {{ hotel.nombre }}{% endblock %}
+
 {% block content %}
-<div class="page-bg">
-    <div class="page-container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="page-title">
-                <i class="bi bi-people"></i> 
-                Huéspedes Activos - {{ hotel.nombre }}
-            </h2>
+<div class="huespedes-wrapper">
+    <div class="huespedes-container">
+        <div class="page-header">
+            <h1><i class="bi bi-people-fill"></i> Huéspedes Activos</h1>
+            <p class="hotel-name">{{ hotel.nombre }}</p>
         </div>
 
         <!-- Buscador -->
-        <div class="filters-card mb-4">
-            <input type="text" id="buscador" class="filter-input" placeholder="🔍 Buscar por nombre o documento...">
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" placeholder="Buscar por nombre o documento...">
+            <i class="bi bi-search"></i>
         </div>
 
-        <!-- Grid de huéspedes -->
-        <div class="huespedes-grid" id="huespedes-grid">
+        <!-- Lista de huéspedes -->
+        <div class="huespedes-list" id="huespedesList">
             {% for huesped in huespedes %}
                 {% for reserva in huesped.reservas.all %}
                     {% if reserva.activa and reserva.habitacion.hotel.id == hotel.id %}
-                    <div class="huesped-card" data-search="{{ huesped.nombre|lower }} {{ huesped.documento }}">
+                    <div class="huesped-card" data-nombre="{{ huesped.nombre|lower }} {{ huesped.apellidos|lower }}" data-documento="{{ huesped.documento }}">
                         <div class="card-header">
-                            <i class="bi bi-person-circle"></i> {{ huesped.nombre }}
+                            <h3>{{ huesped.nombre }} {{ huesped.apellidos }}</h3>
+                            <span class="habitacion-badge">Habitación {{ reserva.habitacion.numero }}</span>
                         </div>
                         <div class="card-body">
-                            <p><i class="bi bi-card-text"></i> <strong>Documento:</strong> {{ huesped.documento }}</p>
-                            <p><i class="bi bi-telephone"></i> <strong>Teléfono:</strong> {{ huesped.telefono }}</p>
+                            <div class="info-row">
+                                <i class="bi bi-person-badge"></i>
+                                <span class="label">Documento:</span>
+                                <span class="value">{{ huesped.documento }}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="bi bi-telephone"></i>
+                                <span class="label">Teléfono:</span>
+                                <span class="value">{{ huesped.telefono }}</span>
+                            </div>
                             {% if huesped.correo %}
-                            <p><i class="bi bi-envelope"></i> <strong>Email:</strong> {{ huesped.correo }}</p>
+                            <div class="info-row">
+                                <i class="bi bi-envelope"></i>
+                                <span class="label">Email:</span>
+                                <span class="value">{{ huesped.correo }}</span>
+                            </div>
                             {% endif %}
-                            <p><i class="bi bi-door-open"></i> <strong>Habitación:</strong> #{{ reserva.habitacion.numero }}</p>
-                            <p><i class="bi bi-calendar"></i> <strong>Entrada:</strong> {{ reserva.fecha_entrada|date:"d/m/Y" }}</p>
-                            <p><i class="bi bi-calendar-check"></i> <strong>Salida:</strong> {{ reserva.fecha_salida|date:"d/m/Y" }}</p>
-                            
+                            <div class="info-row">
+                                <i class="bi bi-calendar-check"></i>
+                                <span class="label">Entrada:</span>
+                                <span class="value">{{ reserva.fecha_entrada|date:"d/m/Y" }}</span>
+                            </div>
+                            <div class="info-row">
+                                <i class="bi bi-calendar-x"></i>
+                                <span class="label">Salida:</span>
+                                <span class="value">{{ reserva.fecha_salida|date:"d/m/Y" }}</span>
+                            </div>
                             {% if huesped.tiene_vehiculo %}
-                            <p class="vehiculo"><i class="bi bi-car-front"></i> <strong>Vehículo:</strong> {{ huesped.placa }}</p>
+                            <div class="info-row vehiculo-row">
+                                <i class="bi bi-car-front"></i>
+                                <span class="label">Vehículo:</span>
+                                <span class="value">{{ huesped.placa }}</span>
+                            </div>
                             {% endif %}
+                            <div class="flex-spacer"></div>
                         </div>
+                        <!-- Footer: solo para recepcionistas -->
+                        {% if user.rol == 'recep' %}
                         <div class="card-footer">
-                            <div class="acciones-grid">
+                            <div class="acciones">
                                 <a href="{% url 'huespedes:por_huesped' huesped.id %}?hotel={{ hotel.id }}" class="btn-ver">
                                     <i class="bi bi-eye"></i> Ver detalles
                                 </a>
-                                {% if user.rol == 'recep' %}
                                 <a href="{% url 'huespedes:huesped_editar' huesped.id %}?hotel={{ hotel.id }}" class="btn-editar">
                                     <i class="bi bi-pencil"></i> Editar
                                 </a>
-                                {% endif %}
                             </div>
                         </div>
+                        {% else %}
+                        <div class="card-footer admin-footer"></div>
+                        {% endif %}
                     </div>
                     {% endif %}
                 {% endfor %}
             {% empty %}
             <div class="empty-state">
-                <i class="bi bi-people"></i>
-                <h3>No hay huéspedes activos</h3>
-                <p>Los huéspedes con reservas activas aparecerán aquí</p>
+                <i class="bi bi-emoji-frown"></i>
+                <p>No hay huéspedes activos en este momento.</p>
             </div>
             {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- SweetAlert para mensajes -->
+<style>
+    /* Tus estilos actuales (se mantienen igual) */
+    .huespedes-wrapper {
+        min-height: calc(100vh - 80px);
+        background: url('{% static "img/hotel8.jpg" %}') no-repeat center center fixed;
+        background-size: cover;
+        padding: 40px 20px;
+        position: relative;
+    }
+    .huespedes-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(3px);
+        z-index: 0;
+    }
+    .huespedes-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+    .page-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    .page-header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    .page-header h1 i {
+        color: #c49b3f;
+        margin-right: 10px;
+    }
+    .hotel-name {
+        color: rgba(255,255,255,0.9);
+        font-size: 1.1rem;
+        margin-top: 5px;
+    }
+    .search-box {
+        max-width: 400px;
+        margin: 0 auto 30px;
+        position: relative;
+    }
+    .search-input {
+        width: 100%;
+        padding: 12px 20px 12px 45px;
+        border: none;
+        border-radius: 50px;
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(5px);
+        font-size: 1rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+    }
+    .search-input:focus {
+        outline: none;
+        background: white;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+    .search-box i {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #c49b3f;
+        font-size: 1.2rem;
+    }
+    .huespedes-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 25px;
+        align-items: stretch;
+    }
+    .huesped-card {
+        background: rgba(255,255,255,0.96);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid rgba(255,255,255,0.3);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .huesped-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    }
+    .card-header {
+        background: #c49b3f;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        flex-shrink: 0;
+    }
+    .card-header h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #0a141e;
+    }
+    .habitacion-badge {
+        background: rgba(10,20,30,0.8);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .card-body {
+        padding: 20px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .info-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+        flex-wrap: wrap;
+    }
+    .info-row i {
+        width: 24px;
+        color: #c49b3f;
+        font-size: 1.1rem;
+    }
+    .label {
+        font-weight: 600;
+        color: #64748b;
+        min-width: 70px;
+    }
+    .value {
+        color: #1e293b;
+        font-weight: 500;
+    }
+    .vehiculo-row {
+        background: rgba(196, 155, 63, 0.1);
+        padding: 8px 12px;
+        border-radius: 12px;
+        margin-top: 8px;
+    }
+    .flex-spacer {
+        flex: 1;
+    }
+    .card-footer {
+        flex-shrink: 0;
+        padding: 15px 20px;
+        background: rgba(0,0,0,0.03);
+        border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    .card-footer.admin-footer {
+        padding: 0;
+        min-height: 20px;
+        background: transparent;
+        border-top: none;
+    }
+    .acciones {
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+    }
+    .btn-ver, .btn-editar {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 40px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+    .btn-ver {
+        background: #2563eb;
+        color: white;
+    }
+    .btn-ver:hover {
+        background: #1d4ed8;
+        transform: translateY(-2px);
+    }
+    .btn-editar {
+        background: #f59e0b;
+        color: white;
+    }
+    .btn-editar:hover {
+        background: #d97706;
+        transform: translateY(-2px);
+    }
+    .empty-state {
+        text-align: center;
+        background: rgba(255,255,255,0.9);
+        border-radius: 24px;
+        padding: 50px;
+        color: #64748b;
+        grid-column: 1/-1;
+    }
+    .empty-state i {
+        font-size: 4rem;
+        color: #c49b3f;
+        margin-bottom: 15px;
+    }
+    @media (max-width: 768px) {
+        .huespedes-list {
+            grid-template-columns: 1fr;
+        }
+        .page-header h1 {
+            font-size: 1.8rem;
+        }
+        .acciones {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Mostrar mensajes de Django con SweetAlert
         {% if messages %}
             {% for message in messages %}
                 Swal.fire({
@@ -87,232 +346,24 @@
                 });
             {% endfor %}
         {% endif %}
+
+        // Búsqueda en tiempo real
+        const searchInput = document.getElementById('searchInput');
+        const cards = document.querySelectorAll('.huesped-card');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const term = this.value.toLowerCase();
+                cards.forEach(card => {
+                    const nombre = card.getAttribute('data-nombre') || '';
+                    const documento = card.getAttribute('data-documento') || '';
+                    if (nombre.includes(term) || documento.includes(term)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
     });
 </script>
-
-<script>
-    document.getElementById('buscador').addEventListener('keyup', function() {
-        let valor = this.value.toLowerCase();
-        document.querySelectorAll('.huesped-card').forEach(card => {
-            let texto = card.dataset.search || '';
-            card.style.display = texto.includes(valor) ? 'block' : 'none';
-        });
-    });
-</script>
-
-<style>
-    .page-bg {
-        min-height: calc(100vh - 160px);
-        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
-                    url('{% static "img/hotell12.jpg" %}') center/cover fixed;
-        padding: 40px 20px;
-    }
-
-    .page-container {
-        max-width: 1300px;
-        margin: 0 auto;
-    }
-
-    .page-title {
-        color: white;
-        font-size: 32px;
-        font-weight: 700;
-        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-        margin: 0;
-    }
-
-    .page-title i {
-        color: #c49b3f;
-        margin-right: 10px;
-    }
-
-    .btn-volver {
-        background: white;
-        padding: 10px 20px;
-        border-radius: 50px;
-        text-decoration: none;
-        color: #1f2937;
-        font-weight: 600;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        transition: 0.3s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-volver:hover {
-        transform: translateX(-5px);
-        background: #f3f4f6;
-    }
-
-    /* Filtros */
-    .filters-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        margin-bottom: 30px;
-    }
-
-    .filter-input {
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
-        display: block;
-        padding: 15px 25px;
-        border: 2px solid #e5e7eb;
-        border-radius: 50px;
-        font-size: 16px;
-        transition: 0.3s;
-        background: white;
-    }
-
-    .filter-input:focus {
-        border-color: #c49b3f;
-        outline: none;
-        box-shadow: 0 0 0 4px rgba(196, 155, 63, 0.1);
-    }
-
-    /* Grid de huéspedes */
-    .huespedes-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 25px;
-    }
-
-    .huesped-card {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: 0.3s;
-    }
-
-    .huesped-card:hover {
-        transform: translateY(-5px);
-        background: white;
-    }
-
-    .card-header {
-        background: linear-gradient(135deg, #2563eb, #1d4ed8);
-        padding: 15px 20px;
-        font-weight: 700;
-        font-size: 18px;
-        color: white;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .card-header i {
-        margin-right: 10px;
-    }
-
-    .card-body {
-        padding: 20px;
-    }
-
-    .card-body p {
-        margin: 10px 0;
-        color: #4b5563;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .card-body i {
-        color: #2563eb;
-        width: 20px;
-    }
-
-    .vehiculo {
-        background: #f59e0b20;
-        padding: 8px 12px;
-        border-radius: 10px;
-        margin-top: 10px;
-    }
-
-    .card-footer {
-        padding: 15px 20px;
-        background: #f9fafb;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .acciones-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-
-    .btn-ver, .btn-editar {
-        padding: 10px;
-        border-radius: 10px;
-        text-decoration: none;
-        font-weight: 600;
-        text-align: center;
-        transition: 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-    }
-
-    .btn-ver {
-        background: #2563eb;
-        color: white;
-    }
-
-    .btn-ver:hover {
-        background: #1d4ed8;
-        transform: translateY(-2px);
-    }
-
-    .btn-editar {
-        background: #f59e0b;
-        color: white;
-    }
-
-    .btn-editar:hover {
-        background: #d97706;
-        transform: translateY(-2px);
-    }
-
-    /* Empty State */
-    .empty-state {
-        grid-column: 1/-1;
-        text-align: center;
-        padding: 60px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 20px;
-        color: white;
-        backdrop-filter: blur(10px);
-    }
-
-    .empty-state i {
-        font-size: 60px;
-        color: rgba(255, 255, 255, 0.5);
-        margin-bottom: 20px;
-    }
-
-    .empty-state h3 {
-        font-size: 24px;
-        margin-bottom: 10px;
-    }
-
-    .empty-state p {
-        color: rgba(255, 255, 255, 0.7);
-    }
-
-    @media (max-width: 768px) {
-        .huespedes-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .acciones-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-</style>
 {% endblock %}

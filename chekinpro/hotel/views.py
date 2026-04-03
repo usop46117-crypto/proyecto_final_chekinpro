@@ -10,6 +10,9 @@ import random
 import string
 from django.core.mail import send_mail
 from django.conf import settings
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
 @login_required
 def crear_hotel(request):
@@ -346,3 +349,13 @@ def panel_hotel(request, hotel_id):
         'mantenimiento': habitaciones.filter(estado='mantenimiento').count(),
     }
     return render(request, 'hotel/panel_hotel.html', context)
+
+@login_required
+@csrf_exempt
+def upload_profile_picture(request):
+    if request.method == 'POST' and request.FILES.get('profile_picture'):
+        user = request.user
+        user.profile_picture = request.FILES['profile_picture']
+        user.save()
+        return JsonResponse({'success': True, 'image_url': user.profile_picture.url})
+    return JsonResponse({'success': False, 'error': 'No se recibió imagen'}, status=400)
