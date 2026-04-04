@@ -4,25 +4,28 @@ Django settings for config project.
 
 from pathlib import Path
 import os
+import dj_database_url
+from decouple import config
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-osldmz$r6z)7ou$(igl1kiu)7zbjj8e2lrfzc1(p!o18-z)9=88'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-osldmz$r6z)7ou$(igl1kiu)7zbjj8e2lrfzc1(p!o18-z)9=88')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-# 👇 AGREGADAS TODAS LAS IPS POSIBLES
 ALLOWED_HOSTS = [
-    '10.3.141.47',
     'localhost',
     '127.0.0.1',
-    '10.3.140.22',
-    '192.168.101.5',
-    '0.0.0.0',
+    '.pythonanywhere.com',
+    '.railway.app',
     '*'
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://chekinpro.up.railway.app',
 ]
 
 # Application definition
@@ -48,6 +51,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -83,16 +87,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# Database MySQL
+# Database PostgreSQL
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'CheKinPro',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-    }
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL', default='sqlite:///db.sqlite3')
+    )
 }
 
 # Password validation
@@ -119,9 +118,10 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Media files
 MEDIA_URL = '/media/'
@@ -144,12 +144,12 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Google OAuth2
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''  # Client ID
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''  #  Client Secret
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = config('GOOGLE_KEY', default='')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('GOOGLE_SECRET', default='')
 
 # Facebook OAuth2
-SOCIAL_AUTH_FACEBOOK_KEY = ''  # App ID
-SOCIAL_AUTH_FACEBOOK_SECRET = ''  # App Secret
+SOCIAL_AUTH_FACEBOOK_KEY = config('FACEBOOK_KEY', default='')
+SOCIAL_AUTH_FACEBOOK_SECRET = config('FACEBOOK_SECRET', default='')
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'id, name, email'
@@ -157,13 +157,15 @@ SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
+EMAIL_PORT = 465
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'chekinpro2027@gmail.com'
-EMAIL_HOST_PASSWORD = 'btcjavlutdwjrtev'
+EMAIL_HOST_USER = config('EMAIL_USER', default='chekinpro2027@gmail.com')
+EMAIL_HOST_PASSWORD = config('EMAIL_PASSWORD', default='btcjavlutdwjrtev')
 
-SITE_URL = 'http://10.3.141.47:8000' # IP
+
+SITE_URL = 'http://10.3.141.47:8000'
 
 #foto
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+

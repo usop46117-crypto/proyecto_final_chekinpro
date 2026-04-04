@@ -36,17 +36,6 @@
             </div>
         </div>
 
-        <!-- Mensajes -->
-        {% if messages %}
-            {% for message in messages %}
-            <div class="custom-alert alert-{{ message.tags }}">
-                <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' %}exclamation-circle-fill{% else %}info-circle-fill{% endif %}"></i>
-                {{ message }}
-                <button type="button" class="alert-close" onclick="this.parentElement.remove()">×</button>
-            </div>
-            {% endfor %}
-        {% endif %}
-
         <div class="row g-4">
             <!-- Columna izquierda - Recepcionista Actual -->
             <div class="col-md-6">
@@ -172,13 +161,13 @@
             </div>
         </div>
     </div>
-</div>
 
 <!-- MODAL PARA FOTO EN PANTALLA COMPLETA -->
 <div id="modalFullscreen" class="modal-fullscreen" style="display: none;">
     <span class="modal-fullscreen-close">&times;</span>
     <img id="modalFullscreenImg" src="" alt="Foto ampliada">
 </div>
+
 
 <!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -210,9 +199,9 @@ function confirmarAsignacionRecepcionista() {
     
     if (!email) {
         Swal.fire({
+            icon: 'error',
             title: 'Error',
             text: 'Debes seleccionar un recepcionista',
-            icon: 'error',
             confirmButtonColor: '#c49b3f',
             background: '#fff'
         });
@@ -243,7 +232,7 @@ function confirmarAsignacionRecepcionista() {
             Swal.fire({
                 icon: '{{ message.tags }}' === 'error' ? 'error' : 'success',
                 title: '{{ message.tags }}' === 'error' ? 'Error' : 'Éxito',
-                text: '{{ message }}',
+                text: '{{ message|escapejs }}',
                 confirmButtonColor: '#c49b3f',
                 timer: 3000,
                 timerProgressBar: true,
@@ -426,12 +415,12 @@ document.addEventListener('DOMContentLoaded', function() {
         gap: 12px;
     }
 
-    .card-header-primary i {
+    .card-header-primary i, .card-header-success i {
         font-size: 24px;
         color: white;
     }
 
-    .card-header-primary h4 {
+    .card-header-primary h4, .card-header-success h4 {
         margin: 0;
         color: white;
         font-weight: 600;
@@ -444,18 +433,6 @@ document.addEventListener('DOMContentLoaded', function() {
         display: flex;
         align-items: center;
         gap: 12px;
-    }
-
-    .card-header-success i {
-        font-size: 24px;
-        color: white;
-    }
-
-    .card-header-success h4 {
-        margin: 0;
-        color: white;
-        font-weight: 600;
-        font-size: 1.2rem;
     }
 
     .card-body {
@@ -549,9 +526,12 @@ document.addEventListener('DOMContentLoaded', function() {
         font-weight: 500;
     }
 
+
     .btn-quitar {
         background: linear-gradient(135deg, #ef4444, #dc2626);
         color: white;
+
+    .btn-quitar, .btn-asignar, .btn-crear {
         border: none;
         padding: 14px 24px;
         border-radius: 16px;
@@ -564,7 +544,12 @@ document.addEventListener('DOMContentLoaded', function() {
         justify-content: center;
         gap: 10px;
         width: 100%;
-        box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-quitar {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        color: white;
     }
 
     .btn-quitar:hover {
@@ -576,19 +561,6 @@ document.addEventListener('DOMContentLoaded', function() {
     .btn-asignar {
         background: linear-gradient(135deg, #10b981, #059669);
         color: white;
-        border: none;
-        padding: 14px 24px;
-        border-radius: 16px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        width: 100%;
-        box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
     }
 
     .btn-asignar:hover {
@@ -600,19 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .btn-crear {
         background: linear-gradient(135deg, #3b82f6, #2563eb);
         color: white;
-        border: none;
-        padding: 14px 24px;
-        border-radius: 16px;
-        font-weight: 600;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
         text-decoration: none;
-        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
     }
 
     .btn-crear:hover {
@@ -621,9 +581,11 @@ document.addEventListener('DOMContentLoaded', function() {
         box-shadow: 0 15px 30px rgba(59, 130, 246, 0.4);
     }
 
+
     .asignar-form {
         margin-bottom: 25px;
     }
+
 
     .form-group {
         margin-bottom: 20px;
@@ -717,6 +679,7 @@ document.addEventListener('DOMContentLoaded', function() {
     .text-muted {
         color: #64748b !important;
     }
+
 
     .custom-alert {
         padding: 16px 20px;
@@ -815,6 +778,7 @@ document.addEventListener('DOMContentLoaded', function() {
         background: rgba(255, 255, 255, 0.2);
         transform: scale(1.1);
     }
+
 
     @media (max-width: 768px) {
         .page-title {
