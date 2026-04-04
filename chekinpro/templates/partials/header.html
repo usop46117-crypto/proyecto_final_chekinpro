@@ -144,7 +144,14 @@
                 <!-- DROPDOWN DE USUARIO -->
                 <div class="user-dropdown">
                     <button class="user-button" id="userMenuButton">
-                        <div class="user-avatar">{{ user.username|first|upper }}</div>
+                        <!-- AVATAR CON FOTO DE PERFIL -->
+                        <div class="user-avatar" id="headerAvatar">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="Foto" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                            {% else %}
+                                {{ user.username|first|upper }}
+                            {% endif %}
+                        </div>
                         <div class="user-info">
                             <span class="user-name">{{ user.username }}</span>
                             <span class="user-role">
@@ -564,6 +571,7 @@
         font-weight: 700;
         font-size: 18px;
         flex-shrink: 0;
+        overflow: hidden;
     }
     
     .user-info {
@@ -867,5 +875,24 @@
                 });
             });
         }
+
+        // Función para actualizar el avatar del header en tiempo real (para cuando se cambie la foto desde el perfil)
+        window.actualizarAvatarHeader = function(url) {
+            const avatarDiv = document.getElementById('headerAvatar');
+            if (url) {
+                avatarDiv.innerHTML = `<img src="${url}?t=${Date.now()}" alt="Foto" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            } else {
+                avatarDiv.innerHTML = '{{ user.username|first|upper }}';
+            }
+        };
+
+        // Escuchar evento personalizado (debe ser disparado desde el perfil cuando se sube/elimina foto)
+        document.addEventListener('fotoPerfilActualizada', function(e) {
+            if (e.detail && e.detail.image_url) {
+                window.actualizarAvatarHeader(e.detail.image_url);
+            } else {
+                window.actualizarAvatarHeader(null);
+            }
+        });
     });
 </script>

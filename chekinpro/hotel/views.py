@@ -13,12 +13,36 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+import os
+from django.views.decorators.http import require_http_methods
 
+
+@login_required
+def editar_hotel(request, hotel_id):
+    if request.user.rol != 'admin':
+        messages.error(request, 'No tienes permiso para editar hoteles.')
+        return redirect('panel_hotel', hotel_id=hotel_id)  # ← redirige al panel del mismo hotel
+    
+    hotel = get_object_or_404(Hotel, id=hotel_id)
+    
+    if request.method == 'POST':
+        form = HotelForm(request.POST, request.FILES, instance=hotel)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Hotel "{hotel.nombre}" actualizado correctamente.')
+            return redirect('panel_hotel', hotel_id=hotel.id)  # ← al panel
+        else:
+            messages.error(request, 'Por favor corrige los errores del formulario.')
+    else:
+        form = HotelForm(instance=hotel)
+    
+    return render(request, 'hotel/editar_hotel.html', {'form': form, 'hotel': hotel})
+    
 @login_required
 def crear_hotel(request):
     # Solo administradores pueden crear hoteles
     if request.user.rol != 'admin':
-        messages.error(request, "⛔ Solo administradores pueden crear hoteles")
+        messages.error(request, " Solo administradores pueden crear hoteles")
         return redirect('panel')
 
     if request.method == 'POST':
@@ -138,38 +162,70 @@ def dashboard(request):
     return render(request, 'hotel/dashboard.html', context)
 
 
+
+
 @login_required
+@require_http_methods(['GET', 'POST'])
 def perfil_hotel(request):
     usuario = request.user
     
-    if request.method == 'POST':
-        # Guardar los cambios - esto funciona para admin y recepcionista
-        usuario.first_name = request.POST.get('first_name', '')
-        usuario.last_name = request.POST.get('last_name', '')
-        usuario.email = request.POST.get('email', '')
-        
-        if hasattr(usuario, 'telefono'):
-            usuario.telefono = request.POST.get('telefono', '')
-        
-        usuario.save()
-        messages.success(request, 'Perfil actualizado correctamente')
+    # ========================================================
+    # 1. ELIMINAR FOTO (se ejecuta ANTES que cualquier otra cosa)
+    # ========================================================
+    if request.method == 'POST' and 'delete_photo' in request.POST:
+        # Verificar si tiene foto
+        if hasattr(usuario, 'profile_picture') and usuario.profile_picture:
+            # Borrar archivo físico (opcional pero recomendado)
+            if usuario.profile_picture.path and os.path.isfile(usuario.profile_picture.path):
+                os.remove(usuario.profile_picture.path)
+            usuario.profile_picture = None
+            usuario.save()
+            messages.success(request, 'Foto de perfil eliminada correctamente.')
+        else:
+            messages.info(request, 'No tenías una foto de perfil para eliminar.')
         return redirect('perfil_hotel')
     
+    # ========================================================
+    # 2. ACTUALIZAR DATOS PERSONALES (solo si NO es delete_photo)
+    # ========================================================
+    if request.method == 'POST':
+        # Solo actualizamos si el campo viene en el POST (evitamos vacíos no deseados)
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        
+        # Actualizar solo si se proporcionó un valor (no vacío)
+        if first_name:
+            usuario.first_name = first_name
+        if last_name:
+            usuario.last_name = last_name
+        if email:
+            usuario.email = email
+        # Para teléfono, permitir vacío explícito (si se envió el campo)
+        if 'telefono' in request.POST and hasattr(usuario, 'telefono'):
+            usuario.telefono = telefono  # puede ser cadena vacía
+        
+        usuario.save()
+        messages.success(request, 'Perfil actualizado correctamente.')
+        return redirect('perfil_hotel')
+    
+    # ========================================================
+    # 3. MOSTRAR PÁGINA (GET)
+    # ========================================================
     # Obtener el hotel según el rol
     hotel = None
     if usuario.rol == 'recep':
-        # Recepcionista: mostrar el hotel donde trabaja
         if hasattr(usuario, 'hotel'):
             hotel = usuario.hotel
         elif hasattr(usuario, 'hotel_set'):
             hotel = usuario.hotel_set.first()
-    else:
-        # Admin: podría no tener hotel asignado directo
-        # O podrías mostrar el primer hotel que administra
+    else:  # admin
         if hasattr(usuario, 'hoteles_administrados'):
             hotel = usuario.hoteles_administrados.first()
     
     context = {
+        'user': usuario,   # <-- clave para que el template funcione con {{ user }}
         'usuario': usuario,
         'nombre_usuario': usuario.username,
         'nombres': usuario.first_name or '',
@@ -180,7 +236,6 @@ def perfil_hotel(request):
         'es_admin': usuario.rol == 'admin',
         'es_recepcionista': usuario.rol == 'recep',
     }
-    
     return render(request, 'hotel/perfil.html', context)
 
 

@@ -74,6 +74,10 @@
                     <a href="{% url 'gestionar_recepcionista' hotel.id %}" class="btn-gestionar">
                         <i class="bi bi-person-gear"></i> Recepcionista
                     </a>
+                    <!-- NUEVO BOTÓN EDITAR HOTEL -->
+                    <a href="{% url 'editar_hotel' hotel.id %}" class="btn-editar">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </a>
                 </div>
             </div>
             {% empty %}
@@ -302,7 +306,7 @@
         gap: 10px;
     }
     
-    .btn-ver, .btn-gestionar {
+    .btn-ver, .btn-gestionar, .btn-editar {
         flex: 1;
         padding: 12px;
         border-radius: 10px;
@@ -339,6 +343,18 @@
         background: linear-gradient(135deg, #e4b95b, #c49b3f);
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(196, 155, 63, 0.4);
+    }
+    
+    /* Estilo para el botón Editar */
+    .btn-editar {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        color: white;
+    }
+    
+    .btn-editar:hover {
+        background: linear-gradient(135deg, #5a6268, #4e555b);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4);
     }
     
     /* Estado vacío */

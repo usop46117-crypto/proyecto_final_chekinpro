@@ -30,6 +30,22 @@
             </div>
         </div>
 
+        <!-- ================================================ -->
+        <!-- SECCIÓN DE MENSAJES AÑADIDA (sin modificar nada más) -->
+        <!-- ================================================ -->
+        {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+            <div class="custom-alert alert-{{ message.tags }}">
+                <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' %}exclamation-circle-fill{% else %}info-circle-fill{% endif %}"></i>
+                {{ message }}
+                <button type="button" class="alert-close" onclick="this.parentElement.remove()">×</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <!-- ================================================ -->
+
         <!-- Título -->
         <h1 class="page-title" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Panel de {{ hotel.nombre }}</h1>
 
@@ -323,6 +339,54 @@
         font-size: 14px;
         margin: 0;
     }
+    
+    /* ================================================ */
+    /* ESTILOS PARA LOS MENSAJES (añadidos sin modificar nada) */
+    /* ================================================ */
+    .messages-container {
+        margin-bottom: 28px;
+    }
+    .custom-alert {
+        padding: 14px 20px;
+        border-radius: 28px;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+        backdrop-filter: blur(12px);
+        background: rgba(255,255,255,0.95);
+        border-left: 6px solid;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .alert-success { 
+        border-left-color: #10b981; 
+        color: #065f46; 
+        background: rgba(209, 250, 229, 0.95);
+    }
+    .alert-error { 
+        border-left-color: #ef4444; 
+        color: #991b1b;
+        background: rgba(254, 226, 226, 0.95);
+    }
+    .alert-info {
+        border-left-color: #3b82f6;
+        color: #1e40af;
+        background: rgba(219, 234, 254, 0.95);
+    }
+    .alert-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        font-size: 1.6rem;
+        cursor: pointer;
+        opacity: 0.6;
+        color: inherit;
+    }
+    .alert-close:hover {
+        opacity: 1;
+    }
+    /* ================================================ */
     
     /* Responsive */
     @media (max-width: 900px) {

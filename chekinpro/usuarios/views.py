@@ -11,16 +11,39 @@ from .models import Usuario
 from hotel.models import Hotel
 from habitaciones.models import Habitacion
 from .forms import LoginForm, RegistroForm
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.core.files.base import ContentFile
+import base64
 
-# ===================== VISTAS PÚBLICAS =====================
+@login_required
+@require_POST
+def subir_foto_perfil(request):
+    try:
+        data = request.POST.get('profile_picture') or request.FILES.get('profile_picture')
+        if not data:
+            return JsonResponse({'success': False, 'error': 'No se recibió imagen'})
+        
+        # Si viene como base64 (desde canvas)
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+            file = ContentFile(base64.b64decode(imgstr), name=f"profile_{request.user.id}.{ext}")
+            request.user.profile_picture = file
+        else:
+            # Si viene como archivo directo
+            request.user.profile_picture = data
+        request.user.save()
+        return JsonResponse({'success': True, 'image_url': request.user.profile_picture.url})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
 
 def home(request):
     if request.user.is_authenticated:
         return redirect('panel')
     return render(request, 'home.html')
 
-from django.core.mail import send_mail
-from django.conf import settings
 
 @login_required
 @user_passes_test(lambda u: u.rol == 'admin')
@@ -262,16 +285,37 @@ def panel(request):
 
 @login_required
 def mi_perfil(request):
+    user = request.user
     if request.method == 'POST':
-        user = request.user
-        user.first_name = request.POST.get('first_name', '')
-        user.last_name = request.POST.get('last_name', '')
-        user.email = request.POST.get('email', '')
-        user.telefono = request.POST.get('telefono', '')
+        # Eliminar foto
+        if 'delete_photo' in request.POST:
+            if user.profile_picture:
+                # Borrar el archivo físico
+                user.profile_picture.delete(save=False)
+                user.profile_picture = None
+                user.save()
+                messages.success(request, "✅ Foto de perfil eliminada correctamente.")
+            else:
+                messages.warning(request, "No tienes una foto de perfil para eliminar.")
+            return redirect('mi_perfil')
+        
+        # Actualizar datos normales y posible nueva foto
+        user.first_name = request.POST.get('first_name', '').strip()
+        user.last_name = request.POST.get('last_name', '').strip()
+        user.email = request.POST.get('email', '').strip()
+        user.telefono = request.POST.get('telefono', '').strip()
+        
+        if 'profile_picture' in request.FILES:
+            # Si ya había foto, la borramos físicamente antes de asignar nueva
+            if user.profile_picture:
+                user.profile_picture.delete(save=False)
+            user.profile_picture = request.FILES['profile_picture']
+        
         user.save()
-        messages.success(request, "✅ Perfil actualizado correctamente")
+        messages.success(request, "✅ Perfil actualizado correctamente.")
         return redirect('mi_perfil')
-    return render(request, 'usuarios/perfil.html', {'usuario': request.user})
+    
+    return render(request, 'usuarios/perfil.html', {'usuario': user})
 
 @login_required
 def logout_view(request):

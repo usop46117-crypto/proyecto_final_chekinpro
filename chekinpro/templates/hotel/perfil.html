@@ -48,7 +48,7 @@
                 <div class="avatar-card" id="avatarCard">
                     <div class="avatar-large" id="avatarPreview">
                         {% if user.profile_picture %}
-                            <img src="{{ user.profile_picture.url }}" alt="Foto perfil" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                            <img src="{{ user.profile_picture.url }}" alt="Foto perfil" id="profileImg" style="width:100%; height:100%; border-radius:50%; object-fit:cover; cursor:pointer;">
                         {% else %}
                             {{ user.username|first|upper }}
                         {% endif %}
@@ -65,9 +65,20 @@
                         {% if user.rol == 'admin' %}Administrador{% else %}Recepcionista{% endif %}
                     </span>
                     
-                    <button type="button" class="btn-cambiar-foto" id="btnCambiarFoto">
-                        <i class="bi bi-camera"></i> Cambiar foto
-                    </button>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                        <button type="button" class="btn-cambiar-foto" id="btnCambiarFoto">
+                            <i class="bi bi-camera"></i> Cambiar foto
+                        </button>
+                        {% if user.profile_picture %}
+                        <form method="POST" action="{% url 'perfil_hotel' %}" style="display: inline;" id="formDeletePhoto">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_photo" value="1">
+                            <button type="submit" class="btn-cambiar-foto" style="background: #fee2e2; color: #dc2626;">
+                                <i class="bi bi-trash"></i> Eliminar foto
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
                 </div>
 
                 {% if hotel %}
@@ -199,6 +210,14 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Modal para ampliar imagen -->
+<div id="imageModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width: 90%; width: auto; background: transparent; box-shadow: none; padding: 0;">
+        <span class="modal-close" style="color: white; font-size: 40px; position: absolute; top: 20px; right: 35px; cursor: pointer;">&times;</span>
+        <img id="modalImage" style="width: 100%; max-height: 90vh; object-fit: contain; border-radius: 16px;">
     </div>
 </div>
 
@@ -399,7 +418,7 @@
     }
 
     .btn-cambiar-foto {
-        margin-top: 22px;
+        margin-top: 0;
         background: #f1f5f9;
         border: none;
         padding: 10px 20px;
@@ -410,8 +429,6 @@
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        width: 100%;
-        justify-content: center;
         font-size: 0.9rem;
         color: #334155;
     }
@@ -538,7 +555,7 @@
         font-style: italic;
     }
 
-    /* Formulario de edición (casillas bonitas) */
+    /* Formulario de edición */
     .form-group {
         margin-bottom: 22px;
     }
@@ -819,10 +836,30 @@
             });
         }
 
+        // --- Ampliar imagen al hacer clic ---
+        const profileImg = document.getElementById('profileImg');
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const closeModalImg = document.querySelector('#imageModal .modal-close');
+        if (profileImg && imageModal && modalImage) {
+            profileImg.addEventListener('click', function() {
+                imageModal.style.display = 'flex';
+                modalImage.src = this.src;
+            });
+        }
+        if (closeModalImg) {
+            closeModalImg.addEventListener('click', function() {
+                imageModal.style.display = 'none';
+            });
+        }
+        window.addEventListener('click', function(e) {
+            if (e.target === imageModal) imageModal.style.display = 'none';
+        });
+
         // --- Lógica de cámara y foto (SweetAlert) ---
         const modal = document.getElementById('fotoModal');
         const btnCambiarFoto = document.getElementById('btnCambiarFoto');
-        const closeModal = document.querySelector('.modal-close');
+        const closeModal = document.querySelector('#fotoModal .modal-close');
         const video = document.getElementById('videoCam');
         const canvas = document.getElementById('canvasCam');
         const btnAbrirCamara = document.getElementById('btnAbrirCamara');
@@ -982,8 +1019,7 @@
                     .then(blob => {
                         const formData = new FormData();
                         formData.append('profile_picture', blob, 'profile.jpg');
-                        // Ruta fija (ajústala si tu URL es diferente)
-                        const uploadUrl = "/hotel/perfil/subir-foto/";
+                        const uploadUrl = "{% url 'subir_foto_perfil' %}";
                         return fetch(uploadUrl, {
                             method: 'POST',
                             headers: { 'X-CSRFToken': '{{ csrf_token }}' },
@@ -995,7 +1031,15 @@
                         Swal.close();
                         if (data.success) {
                             const avatarDiv = document.getElementById('avatarPreview');
-                            avatarDiv.innerHTML = `<img src="${data.image_url}?t=${Date.now()}" alt="Foto perfil" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+                            avatarDiv.innerHTML = `<img src="${data.image_url}?t=${Date.now()}" alt="Foto perfil" id="profileImg" style="width:100%; height:100%; border-radius:50%; object-fit:cover; cursor:pointer;">`;
+                            // Reasignar evento de clic a la nueva imagen
+                            const newImg = document.getElementById('profileImg');
+                            if (newImg) {
+                                newImg.addEventListener('click', function() {
+                                    imageModal.style.display = 'flex';
+                                    modalImage.src = this.src;
+                                });
+                            }
                             modal.style.display = 'none';
                             Swal.fire({
                                 icon: 'success',

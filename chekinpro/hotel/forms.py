@@ -13,3 +13,4 @@ class HotelForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'tiene_parqueadero': forms.CheckboxInput(),
         }
+
