@@ -22,7 +22,7 @@
             {% for huesped in huespedes %}
                 {% for reserva in huesped.reservas.all %}
                     {% if reserva.activa and reserva.habitacion.hotel.id == hotel.id %}
-                    <div class="huesped-card" data-nombre="{{ huesped.nombre|lower }} {{ huesped.apellidos|lower }}" data-documento="{{ huesped.documento }}">
+                    <div class="huesped-card" data-nombre="{{ huesped.nombre|lower }}" data-documento="{{ huesped.documento }}">
                         <div class="card-header">
                             <h3>{{ huesped.nombre }} {{ huesped.apellidos }}</h3>
                             <span class="habitacion-badge">Habitación {{ reserva.habitacion.numero }}</span>
@@ -59,9 +59,17 @@
                             <div class="info-row vehiculo-row">
                                 <i class="bi bi-car-front"></i>
                                 <span class="label">Vehículo:</span>
-                                <span class="value">{{ huesped.placa }}</span>
+                                <span class="value">
+                                    {% if huesped.tipo_vehiculo %}{{ huesped.get_tipo_vehiculo_display|default:huesped.tipo_vehiculo }} - {% endif %}
+                                    {{ huesped.placa }}
+                                </span>
                             </div>
                             {% endif %}
+                            <div class="info-row">
+                                <i class="bi bi-people"></i>
+                                <span class="label">Acompañantes:</span>
+                                <span class="value">{{ huesped.num_acompanantes|default:"0" }}</span>
+                            </div>
                             <div class="flex-spacer"></div>
                         </div>
                         <!-- Footer: solo para recepcionistas -->
@@ -321,12 +329,9 @@
     }
 </style>
 
-<!-- SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Mostrar mensajes de Django con SweetAlert
         {% if messages %}
             {% for message in messages %}
                 Swal.fire({
@@ -347,7 +352,6 @@
             {% endfor %}
         {% endif %}
 
-        // Búsqueda en tiempo real
         const searchInput = document.getElementById('searchInput');
         const cards = document.querySelectorAll('.huesped-card');
         if (searchInput) {
