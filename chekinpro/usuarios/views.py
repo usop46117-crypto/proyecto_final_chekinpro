@@ -49,58 +49,54 @@ def home(request):
 @user_passes_test(lambda u: u.rol == 'admin')
 def toggle_suspension(request):
     admin_user = request.user
-    print(f"=== INICIO toggle_suspension ===")
-    print(f"Admin: {admin_user.username}, rol: {admin_user.rol}")
     
-    # Obtener hoteles del admin
-    hoteles = Hotel.objects.filter(usuario=admin_user)
-    print(f"Hoteles encontrados: {hoteles.count()}")
+    # Obtener el hotel_id de la sesión (o el primer hotel del admin)
+    hotel_id = request.session.get('hotel_id')
+    if not hotel_id:
+        hotel = Hotel.objects.filter(usuario=admin_user).first()
+        if hotel:
+            hotel_id = hotel.id
+        else:
+            messages.error(request, "No tienes hoteles asociados.")
+            return redirect('mis_hoteles')
+    
+    # Obtener el hotel específico
+    try:
+        hotel = Hotel.objects.get(id=hotel_id, usuario=admin_user)
+    except Hotel.DoesNotExist:
+        messages.error(request, "Hotel no encontrado.")
+        return redirect('mis_hoteles')
     
     # Cambiar estado de suspensión del admin
     admin_user.is_suspended = not admin_user.is_suspended
     admin_user.save()
-    print(f"Admin is_suspended ahora = {admin_user.is_suspended}")
     
-    # Procesar cada hotel
-    for hotel in hoteles:
-        print(f"\n--- Procesando hotel: {hotel.nombre} ---")
+    # Buscar recepcionistas de este hotel
+    recepcionistas = Usuario.objects.filter(rol='recep', email=hotel.email)
+    for recep in recepcionistas:
+        recep.is_active = not admin_user.is_suspended
+        recep.save()
         
-        # Buscar recepcionistas cuyo email coincida con el email del hotel (o todos los recepcionistas de ese hotel)
-        # Pero mejor: obtenemos todos los usuarios con rol 'recep' que tengan el mismo email que el hotel.
-        # También podrías tener una relación directa, pero usaremos la lógica que ya tienes.
-        recepcionistas = Usuario.objects.filter(rol='recep', email=hotel.email)
-        print(f"Recepcionistas encontrados (por email={hotel.email}): {recepcionistas.count()}")
-        
-        for recep in recepcionistas:
-            print(f"  Recepcionista: {recep.username}, email: {recep.email}, is_active actual: {recep.is_active}")
-            recep.is_active = not admin_user.is_suspended
-            recep.save()
-            print(f"  -> Nuevo is_active: {recep.is_active}")
-            
-            # Enviar correo a ESTE recepcionista (usando su email)
-            if admin_user.is_suspended:
-                subject = f"🔒 Cuenta suspendida - {hotel.nombre}"
-                message = f"Hola {recep.username},\n\nEl administrador ha suspendido tu cuenta en el hotel {hotel.nombre}. No podrás acceder hasta nueva orden.\n\nEquipo ChekinPro"
-            else:
-                subject = f"✅ Cuenta reactivada - {hotel.nombre}"
-                message = f"Hola {recep.username},\n\nTu cuenta en el hotel {hotel.nombre} ha sido reactivada. Ya puedes ingresar.\n\nEquipo ChekinPro"
-            
-            try:
-                send_mail(subject, message, settings.EMAIL_HOST_USER, [recep.email], fail_silently=False)
-                print(f"  -> Correo enviado a {recep.email}")
-                messages.success(request, f"Correo enviado a {recep.email}")
-            except Exception as e:
-                print(f"  -> ERROR al enviar correo: {e}")
-                messages.error(request, f"Error con {recep.email}: {e}")
+        # Enviar correo (opcional, puedes comentar si no quieres)
+        if admin_user.is_suspended:
+            subject = f"🔒 Cuenta suspendida - {hotel.nombre}"
+            message = f"Hola {recep.username},\n\nEl administrador ha suspendido tu cuenta en el hotel {hotel.nombre}. No podrás acceder hasta nueva orden.\n\nEquipo ChekinPro"
+        else:
+            subject = f"✅ Cuenta reactivada - {hotel.nombre}"
+            message = f"Hola {recep.username},\n\nTu cuenta en el hotel {hotel.nombre} ha sido reactivada. Ya puedes ingresar.\n\nEquipo ChekinPro"
+        try:
+            send_mail(subject, message, settings.EMAIL_HOST_USER, [recep.email], fail_silently=False)
+        except Exception as e:
+            print(f"Error enviando correo: {e}")
     
-    # Mensajes para el admin en la interfaz
+    # Mensaje para mostrar en el panel del hotel
     if admin_user.is_suspended:
-        messages.warning(request, "🔒 Modo Suspensión Activado. Los recepcionistas han sido desactivados y notificados.")
+        messages.success(request, "🔒 Modo Suspensión Activado. Los recepcionistas han sido desactivados y notificados.")
     else:
         messages.success(request, "✅ Modo Suspensión Desactivado. Los recepcionistas han sido reactivados y notificados.")
     
-    print("=== FIN toggle_suspension ===")
-    return redirect('panel')
+    # Redirigir al panel del hotel (con el hotel_id)
+    return redirect('panel_hotel', hotel_id=hotel.id)
 
 def login_view(request):
     if request.user.is_authenticated:
